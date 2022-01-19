@@ -31,6 +31,20 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         );
     }
 
+    // register token metadata to evm space
+    function registerMetadata(IERC20 _token) public override {
+        crossSpaceCall.callEVM(
+            bytes20(evmSide),
+            abi.encodeWithSelector(
+                IEvmSide.registerCRC20.selector,
+                address(_token),
+                _token.name(),
+                _token.symbol(),
+                _token.decimals()
+            )
+        );
+    }
+
     // CRC20 to EVM space
     function crossToEvm(
         IERC20 _token,
@@ -38,32 +52,6 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         uint256 _amount
     ) public override nonReentrant {
         _token.safeTransferFrom(msg.sender, address(this), _amount);
-
-        if (tokenToEvm[address(_token)] == address(0)) {
-            address mappedToken =
-                address(
-                    crossSpaceCall.create2EVM(
-                        abi.encodePacked(
-                            type(MappedToken).creationCode,
-                            evmSide,
-                            address(_token),
-                            _token.name(),
-                            _token.symbol(),
-                            _token.decimals()
-                        ),
-                        keccak256(abi.encodePacked(_token))
-                    )
-                );
-            tokenToEvm[address(_token)] = mappedToken;
-            crossSpaceCall.callEVM(
-                bytes20(evmSide),
-                abi.encodeWithSelector(
-                    IEvmSide.registerMappedToken.selector,
-                    address(_token),
-                    mappedToken
-                )
-            );
-        }
 
         crossSpaceCall.callEVM(
             bytes20(evmSide),

@@ -12,6 +12,8 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
 
     address public override cfxSide;
 
+    mapping(address => TokenMetadata) crc20Metadata;
+
     mapping(address => mapping(address => mapping(address => uint256)))
         public
         override lockedMappedToken;
@@ -42,14 +44,26 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
         );
     }
 
-    function registerMappedToken(address _token, address _mappedToken)
-        public
-        override
-        nonReentrant
-    {
+    function registerCRC20(
+        address _crc20,
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals
+    ) public override nonReentrant {
         require(msg.sender == cfxSide, "EvmSide: sender is not cfx side");
-        mappedTokens[_token] = _mappedToken;
-        mappedTokenList.push(_token);
+        require(crc20Metadata[_crc20].decimals == 0, "EvmSide: registered");
+        TokenMetadata memory d;
+        d.name = _name;
+        d.symbol = _symbol;
+        d.decimals = _decimals;
+
+        crc20Metadata[_crc20] = d;
+    }
+
+    function createMappedToken(address _crc20) public override {
+        require(crc20Metadata[_crc20].decimals > 0, "EvmSide: not registered");
+        TokenMetadata memory d = crc20Metadata[_crc20];
+        _deploy(_crc20, d.name, d.symbol, d.decimals);
     }
 
     // mint mapped CRC20
@@ -59,6 +73,10 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
         uint256 _amount
     ) public override nonReentrant {
         require(msg.sender == cfxSide, "EvmSide: sender is not cfx side");
+        require(
+            mappedTokens[_token] != address(0),
+            "EvmSide: token is not mapped"
+        );
         MappedToken(mappedTokens[_token]).mint(_to, _amount);
     }
 
@@ -74,7 +92,7 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
         uint256 lockedAmount =
             lockedMappedToken[mappedToken][_evmAccount][_cfxAccount];
         require(lockedAmount >= _amount, "EvmSide: insufficent lock");
-        MappedToken(_token).burn(address(this), _amount);
+        MappedToken(mappedToken).burn(address(this), _amount);
         lockedAmount -= _amount;
         lockedMappedToken[mappedToken][_evmAccount][_cfxAccount] = lockedAmount;
 

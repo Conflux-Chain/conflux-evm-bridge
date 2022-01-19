@@ -4,6 +4,12 @@ pragma solidity ^0.8.2;
 import "./IERC20.sol";
 
 abstract contract IEvmSide {
+    struct TokenMetadata {
+        string name;
+        string symbol;
+        uint8 decimals;
+    }
+
     event LockedMappedToken(
         address indexed mappedToken,
         address indexed evmAccount,
@@ -44,9 +50,14 @@ abstract contract IEvmSide {
         address _cfxAccount
     ) external view virtual returns (uint256);
 
-    function registerMappedToken(address _token, address _mappedToken)
-        public
-        virtual;
+    function registerCRC20(
+        address _crc20,
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals
+    ) public virtual;
+
+    function createMappedToken(address _crc20) public virtual;
 
     function mint(
         address _token,

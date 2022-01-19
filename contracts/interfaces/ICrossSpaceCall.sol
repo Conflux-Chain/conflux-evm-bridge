@@ -26,11 +26,6 @@ interface ICrossSpaceCall {
 
     function createEVM(bytes calldata init) external payable returns (bytes20);
 
-    function create2EVM(bytes calldata init, bytes32 salt)
-        external
-        payable
-        returns (bytes20);
-
     function transferEVM(bytes20 to)
         external
         payable
