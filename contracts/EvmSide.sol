@@ -5,10 +5,9 @@ import "./interfaces/IEvmSide.sol";
 import "./interfaces/IERC20.sol";
 import "./libraries/SafeERC20.sol";
 import "./utils/ReentrancyGuard.sol";
-import "./roles/Ownable.sol";
 import "./MappedTokenDeployer.sol";
 
-contract EvmSide is IEvmSide, MappedTokenDeployer, Ownable, ReentrancyGuard {
+contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     address public override cfxSide;
@@ -21,9 +20,9 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, Ownable, ReentrancyGuard {
         public
         override lockedToken;
 
-    function setCfxSide(address _cfxSide) public onlyOwner {
+    function setCfxSide() public override {
         require(cfxSide == address(0), "EvmSide: cfx side set already");
-        cfxSide = _cfxSide;
+        cfxSide = msg.sender;
     }
 
     function getTokenData(address _token)
@@ -43,14 +42,14 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, Ownable, ReentrancyGuard {
         );
     }
 
-    function createMappedToken(
-        address _token,
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals
-    ) public override {
+    function registerMappedToken(address _token, address _mappedToken)
+        public
+        override
+        nonReentrant
+    {
         require(msg.sender == cfxSide, "EvmSide: sender is not cfx side");
-        _deploy(_token, _name, _symbol, _decimals);
+        mappedTokens[_token] = _mappedToken;
+        mappedTokenList.push(_token);
     }
 
     // mint mapped CRC20
@@ -58,7 +57,7 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, Ownable, ReentrancyGuard {
         address _token,
         address _to,
         uint256 _amount
-    ) public override {
+    ) public override nonReentrant {
         require(msg.sender == cfxSide, "EvmSide: sender is not cfx side");
         MappedToken(mappedTokens[_token]).mint(_to, _amount);
     }
@@ -69,7 +68,7 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, Ownable, ReentrancyGuard {
         address _evmAccount,
         address _cfxAccount,
         uint256 _amount
-    ) public override {
+    ) public override nonReentrant {
         require(msg.sender == cfxSide, "EvmSide: sender is not cfx side");
         address mappedToken = mappedTokens[_token];
         uint256 lockedAmount =
@@ -79,7 +78,12 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, Ownable, ReentrancyGuard {
         lockedAmount -= _amount;
         lockedMappedToken[mappedToken][_evmAccount][_cfxAccount] = lockedAmount;
 
-        emit LockedMappedToken(mappedToken, _evmAccount, _cfxAccount, _amount);
+        emit LockedMappedToken(
+            mappedToken,
+            _evmAccount,
+            _cfxAccount,
+            lockedAmount
+        );
     }
 
     // lock mapped CRC20 for a conflux space address
@@ -87,7 +91,7 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, Ownable, ReentrancyGuard {
         address _mappedToken,
         address _cfxAccount,
         uint256 _amount
-    ) public override {
+    ) public override nonReentrant {
         uint256 oldAmount =
             lockedMappedToken[_mappedToken][msg.sender][_cfxAccount];
         if (oldAmount > 0) {
@@ -111,7 +115,7 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, Ownable, ReentrancyGuard {
         IERC20 _token,
         address _cfxAccount,
         uint256 _amount
-    ) public override {
+    ) public override nonReentrant {
         uint256 oldAmount =
             lockedToken[address(_token)][msg.sender][_cfxAccount];
         if (oldAmount > 0) {
@@ -132,14 +136,14 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, Ownable, ReentrancyGuard {
         address _evmAccount,
         address _cfxAccount,
         uint256 _amount
-    ) public override {
+    ) public override nonReentrant {
         require(msg.sender == cfxSide, "EvmSide: sender is not cfx side");
         uint256 lockedAmount = lockedToken[_token][_evmAccount][_cfxAccount];
         require(lockedAmount >= _amount, "EvmSide: insufficent lock");
         lockedAmount -= _amount;
-        lockedMappedToken[_token][_evmAccount][_cfxAccount] = lockedAmount;
+        lockedToken[_token][_evmAccount][_cfxAccount] = lockedAmount;
 
-        emit LockedToken(_token, _evmAccount, _cfxAccount, _amount);
+        emit LockedToken(_token, _evmAccount, _cfxAccount, lockedAmount);
     }
 
     // withdraw from conflux space

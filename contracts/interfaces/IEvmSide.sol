@@ -20,6 +20,8 @@ abstract contract IEvmSide {
 
     function cfxSide() external view virtual returns (address);
 
+    function setCfxSide() public virtual;
+
     function getTokenData(address _token)
         public
         view
@@ -42,12 +44,9 @@ abstract contract IEvmSide {
         address _cfxAccount
     ) external view virtual returns (uint256);
 
-    function createMappedToken(
-        address _token,
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals
-    ) public virtual;
+    function registerMappedToken(address _token, address _mappedToken)
+        public
+        virtual;
 
     function mint(
         address _token,

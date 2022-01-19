@@ -7,36 +7,28 @@ import "./interfaces/IEvmSide.sol";
 import "./interfaces/IConfluxSide.sol";
 import "./libraries/SafeERC20.sol";
 import "./utils/ReentrancyGuard.sol";
-import "./roles/Ownable.sol";
 import "./MappedTokenDeployer.sol";
 
-contract ConfluxSide is
-    IConfluxSide,
-    MappedTokenDeployer,
-    Ownable,
-    ReentrancyGuard
-{
+contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     ICrossSpaceCall constant crossSpaceCall =
         ICrossSpaceCall(0x0888000000000000000000000000000000000006);
 
     address public override evmSide;
+    // mapped Evm Token => Evm Token
     mapping(address => address) public override sourceTokens;
+    // token => mapped Cfx Token in Evm space
+    mapping(address => address) public override tokenToEvm;
 
-    function setEvmSide(address _evmSide) public onlyOwner {
+    function setEvmSide(address _evmSide) public {
         require(evmSide == address(0), "ConfluxSide: evm side set already");
         evmSide = _evmSide;
-    }
 
-    function createMappedToken(
-        address _token,
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals
-    ) public override {
-        require(msg.sender == evmSide, "ConfluxSide: sender is not evm side");
-        _deploy(_token, _name, _symbol, _decimals);
+        crossSpaceCall.callEVM(
+            bytes20(evmSide),
+            abi.encodeWithSelector(IEvmSide.setCfxSide.selector)
+        );
     }
 
     // CRC20 to EVM space
@@ -47,16 +39,31 @@ contract ConfluxSide is
     ) public override nonReentrant {
         _token.safeTransferFrom(msg.sender, address(this), _amount);
 
-        crossSpaceCall.callEVM(
-            bytes20(evmSide),
-            abi.encodeWithSelector(
-                IEvmSide.createMappedToken.selector,
-                address(_token),
-                _token.name(),
-                _token.symbol(),
-                _token.decimals()
-            )
-        );
+        if (tokenToEvm[address(_token)] == address(0)) {
+            address mappedToken =
+                address(
+                    crossSpaceCall.create2EVM(
+                        abi.encodePacked(
+                            type(MappedToken).creationCode,
+                            evmSide,
+                            address(_token),
+                            _token.name(),
+                            _token.symbol(),
+                            _token.decimals()
+                        ),
+                        keccak256(abi.encodePacked(_token))
+                    )
+                );
+            tokenToEvm[address(_token)] = mappedToken;
+            crossSpaceCall.callEVM(
+                bytes20(evmSide),
+                abi.encodeWithSelector(
+                    IEvmSide.registerMappedToken.selector,
+                    address(_token),
+                    mappedToken
+                )
+            );
+        }
 
         crossSpaceCall.callEVM(
             bytes20(evmSide),

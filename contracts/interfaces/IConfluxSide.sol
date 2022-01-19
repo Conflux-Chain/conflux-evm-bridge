@@ -40,12 +40,7 @@ abstract contract IConfluxSide {
         virtual
         returns (address);
 
-    function createMappedToken(
-        address _token,
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals
-    ) public virtual;
+    function tokenToEvm(address token) external view virtual returns (address);
 
     function crossToEvm(
         IERC20 _token,

@@ -16,6 +16,7 @@ contract MappedTokenDeployer {
         if (mappedTokens[_token] == address(0)) {
             mappedToken = address(
                 new MappedToken{salt: keccak256(abi.encodePacked(_token))}(
+                    address(this),
                     _token,
                     _name,
                     _symbol,
