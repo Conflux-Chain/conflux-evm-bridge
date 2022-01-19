@@ -1,0 +1,14 @@
+diff --git a/node_modules/conflux-address-js/lib/index.js b/node_modules/conflux-address-js/lib/index.js
+index 23da09d..9470e20 100644
+--- a/node_modules/conflux-address-js/lib/index.js
++++ b/node_modules/conflux-address-js/lib/index.js
+@@ -116,7 +116,8 @@ function getAddressType(hexAddress) {
+       return 'null';
+ 
+     default:
+-      throw new Error('hexAddress should start with 0x0, 0x1 or 0x8');
++      //throw new Error('hexAddress should start with 0x0, 0x1 or 0x8');
++      return 'invalid';
+   }
+ }
+ 
