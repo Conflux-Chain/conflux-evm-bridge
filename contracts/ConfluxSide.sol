@@ -18,8 +18,6 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
     address public override evmSide;
     // mapped Evm Token => Evm Token
     mapping(address => address) public override sourceTokens;
-    // token => mapped Cfx Token in Evm space
-    mapping(address => address) public override tokenToEvm;
 
     function setEvmSide(address _evmSide) public {
         require(evmSide == address(0), "ConfluxSide: evm side set already");
