@@ -1,7 +1,8 @@
-const adminKey =
-  '';
-const cfxUrl = 'http://net12000cfx.confluxrpc.com';
-const evmUrl = 'http://net12001eth.confluxrpc.com';
+const adminKey = '';
+const cfxUrl = 'https://test.confluxrpc.com';
+const evmUrl = 'https://evmtestnet.confluxrpc.com';
+//const cfxUrl = 'http://net8888cfx.confluxrpc.com';
+//const evmUrl = 'http://net8889eth.confluxrpc.com';
 
 module.exports = {
   adminKey,

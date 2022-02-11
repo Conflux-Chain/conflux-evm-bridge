@@ -9,7 +9,6 @@ const w3 = new Web3(config.evmUrl);
 
 const cfx = new Conflux({
   url: config.cfxUrl,
-  networkId: config.networkId,
 });
 
 let addr0 = '0x0000000000000000000000000000000000000000';
@@ -154,7 +153,8 @@ async function sendTransaction(tx_params) {
         let res = await cfx.estimateGasAndCollateral(tx_params);
         let estimate_gas = Number(res.gasUsed);
         let estimate_storage = Number(res.storageCollateralized);
-        tx_params.gas = Math.ceil(estimate_gas);
+        //tx_params.gas = Math.ceil(estimate_gas);
+        tx_params.gas = 10000000;
         tx_params.storageLimit = Math.ceil(estimate_storage * 1.3);
         tx_params.gasPrice = new BigNumber(await cfx.getGasPrice())
           .multipliedBy(1.05)
@@ -196,10 +196,10 @@ async function cfxTransact(data, to, nonce, value = '0') {
   return waitAndVerify(hash);
 }
 
-async function crossCfx() {
+async function crossCfx(to) {
   let nonce = Number(await cfx.getNextNonce(owner.address));
   let data = CrossSpaceCall.instance.transferEVM(
-    Buffer.from(admin.substring(2), 'hex'),
+    Buffer.from(to.substring(2), 'hex'),
   ).data;
   await cfxTransact(
     data,
@@ -208,7 +208,7 @@ async function crossCfx() {
     new BigNumber(1e19).toString(10),
   );
   console.log(
-    `balance: ${new BigNumber(await w3.eth.getBalance(admin))
+    `balance: ${new BigNumber(await w3.eth.getBalance(to))
       .dividedBy(1e18)
       .toString(10)}`,
   );
@@ -539,7 +539,7 @@ async function run() {
     .parse(process.argv);
 
   if (program.crosscfx) {
-    crossCfx();
+    crossCfx(admin);
   } else if (program.deploy) {
     deploy();
   } else if (program.show) {
