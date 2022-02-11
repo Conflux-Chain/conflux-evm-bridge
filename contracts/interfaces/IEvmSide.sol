@@ -8,6 +8,7 @@ abstract contract IEvmSide {
         string name;
         string symbol;
         uint8 decimals;
+        bool registered;
     }
 
     event LockedMappedToken(
@@ -37,6 +38,12 @@ abstract contract IEvmSide {
             string memory,
             uint8
         );
+
+    function crc20Metadata(address _crc20)
+        external
+        view
+        virtual
+        resturns(TokenMetadata);
 
     function lockedMappedToken(
         address _token,

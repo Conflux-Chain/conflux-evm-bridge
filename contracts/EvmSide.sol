@@ -12,7 +12,7 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
 
     address public override cfxSide;
 
-    mapping(address => TokenMetadata) crc20Metadata;
+    mapping(address => TokenMetadata) public crc20Metadata;
 
     mapping(address => mapping(address => mapping(address => uint256)))
         public
@@ -51,17 +51,18 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
         uint8 _decimals
     ) public override nonReentrant {
         require(msg.sender == cfxSide, "EvmSide: sender is not cfx side");
-        require(crc20Metadata[_crc20].decimals == 0, "EvmSide: registered");
+        require(!crc20Metadata[_crc20].registered, "EvmSide: registered");
         TokenMetadata memory d;
         d.name = _name;
         d.symbol = _symbol;
         d.decimals = _decimals;
+        d.registered = true;
 
         crc20Metadata[_crc20] = d;
     }
 
     function createMappedToken(address _crc20) public override {
-        require(crc20Metadata[_crc20].decimals > 0, "EvmSide: not registered");
+        require(crc20Metadata[_crc20].registered, "EvmSide: not registered");
         TokenMetadata memory d = crc20Metadata[_crc20];
         _deploy(_crc20, d.name, d.symbol, d.decimals);
     }
