@@ -4,7 +4,10 @@ pragma solidity ^0.8.0;
 import "./MappedToken.sol";
 
 contract MappedTokenDeployer {
+    // source token => mapped token
     mapping(address => address) public mappedTokens;
+    // mapped token => source token
+    mapping(address => address) public sourceTokens;
     address[] public mappedTokenList;
 
     function _deploy(
@@ -24,6 +27,7 @@ contract MappedTokenDeployer {
                 )
             );
             mappedTokens[_token] = mappedToken;
+            sourceTokens[mappedToken] = _token;
             mappedTokenList.push(_token);
         } else {
             mappedToken = mappedTokens[_token];

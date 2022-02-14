@@ -34,12 +34,6 @@ abstract contract IConfluxSide {
 
     function evmSide() external view virtual returns (address);
 
-    function sourceTokens(address token)
-        external
-        view
-        virtual
-        returns (address);
-
     function registerMetadata(IERC20 _token) public virtual;
 
     function crossToEvm(

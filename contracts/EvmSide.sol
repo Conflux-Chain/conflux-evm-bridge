@@ -89,6 +89,10 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
         uint256 _amount
     ) public override nonReentrant {
         require(msg.sender == cfxSide, "EvmSide: sender is not cfx side");
+        require(
+            mappedTokens[_token] != address(0),
+            "EvmSide: token is not mapped"
+        );
         address mappedToken = mappedTokens[_token];
         uint256 lockedAmount =
             lockedMappedToken[mappedToken][_evmAccount][_cfxAccount];
@@ -111,6 +115,11 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
         address _cfxAccount,
         uint256 _amount
     ) public override nonReentrant {
+        require(
+            sourceTokens[_mappedToken] != address(0),
+            "EvmSide: not mapped token"
+        );
+
         uint256 oldAmount =
             lockedMappedToken[_mappedToken][msg.sender][_cfxAccount];
         if (oldAmount > 0) {
@@ -135,6 +144,11 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
         address _cfxAccount,
         uint256 _amount
     ) public override nonReentrant {
+        require(
+            sourceTokens[address(_token)] == address(0),
+            "EvmSide: token is mapped from core space"
+        );
+
         uint256 oldAmount =
             lockedToken[address(_token)][msg.sender][_cfxAccount];
         if (oldAmount > 0) {

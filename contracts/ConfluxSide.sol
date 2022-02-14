@@ -16,8 +16,6 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         ICrossSpaceCall(0x0888000000000000000000000000000000000006);
 
     address public override evmSide;
-    // mapped Evm Token => Evm Token
-    mapping(address => address) public override sourceTokens;
 
     function setEvmSide(address _evmSide) public {
         require(evmSide == address(0), "ConfluxSide: evm side set already");
@@ -31,6 +29,11 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
 
     // register token metadata to evm space
     function registerMetadata(IERC20 _token) public override {
+        require(
+            sourceTokens[address(_token)] == address(0),
+            "ConfluxSide: token is mapped from evm space"
+        );
+
         crossSpaceCall.callEVM(
             bytes20(evmSide),
             abi.encodeWithSelector(
@@ -49,6 +52,12 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         address _evmAccount,
         uint256 _amount
     ) public override nonReentrant {
+        require(
+            sourceTokens[address(_token)] == address(0),
+            "ConfluxSide: token is mapped from evm space"
+        );
+        require(_amount > 0, "ConfluxSide: invalid amount");
+
         _token.safeTransferFrom(msg.sender, address(this), _amount);
 
         crossSpaceCall.callEVM(
@@ -70,6 +79,12 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         address _evmAccount,
         uint256 _amount
     ) public override nonReentrant {
+        require(
+            sourceTokens[address(_token)] == address(0),
+            "ConfluxSide: token is mapped from evm space"
+        );
+        require(_amount > 0, "ConfluxSide: invalid amount");
+
         crossSpaceCall.callEVM(
             bytes20(evmSide),
             abi.encodeWithSelector(
@@ -92,6 +107,8 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         address _evmAccount,
         uint256 _amount
     ) public override nonReentrant {
+        require(_amount > 0, "ConfluxSide: invalid amount");
+
         if (mappedTokens[_evmToken] == address(0)) {
             (string memory name, string memory symbol, uint8 decimals) =
                 abi.decode(
@@ -105,7 +122,6 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
                     (string, string, uint8)
                 );
             _deploy(_evmToken, name, symbol, decimals);
-            sourceTokens[mappedTokens[_evmToken]] = _evmToken;
         }
 
         crossSpaceCall.callEVM(
@@ -130,6 +146,12 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         address _evmAccount,
         uint256 _amount
     ) public override nonReentrant {
+        require(
+            mappedTokens[_evmToken] != address(0),
+            "ConfluxSide: not mapped token"
+        );
+        require(_amount > 0, "ConfluxSide: invalid amount");
+
         MappedToken(mappedTokens[_evmToken]).burn(msg.sender, _amount);
 
         crossSpaceCall.callEVM(

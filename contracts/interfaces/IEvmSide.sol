@@ -39,12 +39,6 @@ abstract contract IEvmSide {
             uint8
         );
 
-    function crc20Metadata(address _crc20)
-        external
-        view
-        virtual
-        resturns(TokenMetadata);
-
     function lockedMappedToken(
         address _token,
         address _evmAccount,
