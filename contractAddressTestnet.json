@@ -1,6 +1,6 @@
 {
-	"ConfluxSide": "cfxtest:accxs78b5z3t3v2r2eb92g1yw89usf04sagruudkja",
-	"EvmSide": "0x0851ce2d7a522356d44caf4c24b9c9f42f315b6c",
-	"ConfluxFaucetToken": "cfxtest:acbyfjwxe9w70aa8h4gzxt87jyae8jd2dju34nzaf8",
-	"EvmFaucetToken": "0x3ce27c3d202045f00968d6204f224e7f7924ed3d"
+	"ConfluxSide": "cfxtest:acgt8t0zkmcbfceh9a6m54exw3t0ntg28ub8b9ye2p",
+	"EvmSide": "0x8791c2e2afb284e11b476fe84ac1e5c9bccb3647",
+	"ConfluxFaucetToken": "cfxtest:ace19hkyevhkkd1usar01j2207xh28ag9y1z37t534",
+	"EvmFaucetToken": "0x59c58250537d0078c1c3ef241a6a883860df4c08"
 }
