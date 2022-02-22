@@ -5,21 +5,24 @@
 			"mapped_address": "0x8c759898b4B2CECB5454216AFb4779894dada47A",
 			"name": "Conflux Faucet Token",
 			"symbol": "CFT",
-			"decimals": "18"
+			"decimals": "18",
+			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/default.png"
 		},
 		{
 			"native_address": "cfxtest:acepe88unk7fvs18436178up33hb4zkuf62a9dk1gv",
 			"mapped_address": "0x874979a82f53AF9E8B35d7F3657366DdD2206DEb",
 			"name": "conflux USDT",
 			"symbol": "cUSDT",
-			"decimals": "18"
+			"decimals": "18",
+			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/default.png"
 		},
 		{
 			"native_address": "cfxtest:acceftennya582450e1g227dthfvp8zz1p370pvb6r",
 			"mapped_address": "0x3BeFD75acf84665e0D6D5c7E7Ddd225F93A9FDd5",
 			"name": "conflux ETH",
 			"symbol": "cETH",
-			"decimals": "18"
+			"decimals": "18",
+			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/default.png"
 		}
 	],
 	"evm_native_tokens": [
@@ -28,7 +31,8 @@
 			"mapped_address": "cfxtest:acf5ktazg5tfatcv3gt2ce76pxy097r3d63cg91mhc",
 			"name": "Evm Faucet Token",
 			"symbol": "EFT",
-			"decimals": "18"
+			"decimals": "18",
+			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/default.png"
 		}
 	]
 }
