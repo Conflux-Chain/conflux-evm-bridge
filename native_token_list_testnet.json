@@ -1,22 +1,22 @@
 {
 	"core_native_tokens": [
 		{
-			"native_address": "cfxtest:ace19hkyevhkkd1usar01j2207xh28ag9y1z37t534",
-			"mapped_address": "0x11adb1DEc33e86396FaE5F5C305f630145BdCd5A",
+			"native_address": "cfxtest:acgcj0h8xp3ydgtmf39e5kh8ab6f3ynnajafp2y04f",
+			"mapped_address": "0x8c759898b4B2CECB5454216AFb4779894dada47A",
 			"name": "Conflux Faucet Token",
 			"symbol": "CFT",
 			"decimals": "18"
 		},
 		{
 			"native_address": "cfxtest:acepe88unk7fvs18436178up33hb4zkuf62a9dk1gv",
-			"mapped_address": "0xb10e6a3d4d088Aa89FA19a678F5112Fcd4263C95",
+			"mapped_address": "0x874979a82f53AF9E8B35d7F3657366DdD2206DEb",
 			"name": "conflux USDT",
 			"symbol": "cUSDT",
 			"decimals": "18"
 		},
 		{
 			"native_address": "cfxtest:acceftennya582450e1g227dthfvp8zz1p370pvb6r",
-			"mapped_address": "0x4E54E9a1FBa1926B443A6baB42d459267bEe2B50",
+			"mapped_address": "0x3BeFD75acf84665e0D6D5c7E7Ddd225F93A9FDd5",
 			"name": "conflux ETH",
 			"symbol": "cETH",
 			"decimals": "18"
@@ -24,8 +24,8 @@
 	],
 	"evm_native_tokens": [
 		{
-			"native_address": "0x59c58250537d0078c1c3ef241a6a883860df4c08",
-			"mapped_address": "cfxtest:aca9hfdnuad7r95u3d471v54zte895xxdy12wp7ax0",
+			"native_address": "0xda49fdf62164fc7a4e3ce786c984bf76cb4f4498",
+			"mapped_address": "cfxtest:acf5ktazg5tfatcv3gt2ce76pxy097r3d63cg91mhc",
 			"name": "Evm Faucet Token",
 			"symbol": "EFT",
 			"decimals": "18"
