@@ -87,14 +87,14 @@ Parameters:
 This function burn *_amount* of mapped token, and send *_amount* of native token *_evmToken* to *_evmAccount* at evm space.
 
 ```solidity
-mapping(address => address) public mappedtokens;
+mapping(address => address) public mappedTokens;
 ```
 mapping of evm native token address to mapped token address at core space.
 
 this mapping can used to determine if an address is an evm native token that is able to cross space (check the value is zero address or not).
 
 ```solidity
-mapping(address => address) public sourcetokens;
+mapping(address => address) public sourceTokens;
 ```
 mapping of mapped token at core space to evm native token address. the reverse mappinig of *mappedtokens*.
 
@@ -159,14 +159,14 @@ address of evm native token => evm space address, the locker => core space addre
 Given the evm native token, the evm account who locked in EVMSide, the core space account who is able to claim, get the current locked amount in EVMSide, which is equal to the mintable amount of mapped token at core space.
 
 ```solidity
-mapping(address => address) public mappedtokens;
+mapping(address => address) public mappedTokens;
 ```
 mapping of core space native token address to mapped token address at evm space.
 
 this mapping can used to determine if an address is an core space native token that is able to cross space (check the value is zero address or not).
 
 ```solidity
-mapping(address => address) public sourcetokens;
+mapping(address => address) public sourceTokens;
 ```
 mapping of mapped token at evm space to core space native token address. the reverse mappinig of *mappedtokens*.
 
