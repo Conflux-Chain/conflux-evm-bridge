@@ -12,14 +12,17 @@ import "./MappedTokenDeployer.sol";
 contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    ICrossSpaceCall constant crossSpaceCall =
-        ICrossSpaceCall(0x0888000000000000000000000000000000000006);
+    ICrossSpaceCall public crossSpaceCall;
 
     address public override evmSide;
 
     function setEvmSide(address _evmSide) public {
         require(evmSide == address(0), "ConfluxSide: evm side set already");
         evmSide = _evmSide;
+
+        crossSpaceCall = ICrossSpaceCall(
+            0x0888000000000000000000000000000000000006
+        );
 
         crossSpaceCall.callEVM(
             bytes20(evmSide),
