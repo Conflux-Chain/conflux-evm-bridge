@@ -1,10 +1,10 @@
 {
-	"ConfluxSide": "cfxtest:achrygt0at7ub1bty99um6f5g1mktdjw7ubt7gc40j",
-	"EvmSide": "0xef601c824532ae1ea72545a3ef74e6ed0be39cf2",
+	"ConfluxSide": "cfxtest:acb3m4j5uwss7bfd97refj8m5zf9yd12gjghfcxws9",
+	"EvmSide": "0xe512ac0a6cc28a7c38c88ba99b7fe4c7ba0be39e",
 	"ConfluxFaucetToken": "cfxtest:acgcj0h8xp3ydgtmf39e5kh8ab6f3ynnajafp2y04f",
 	"EvmFaucetToken": "0xda49fdf62164fc7a4e3ce786c984bf76cb4f4498",
-	"ConfluxSideImpl": "cfxtest:acchtn0jcm9g8mrz9kp6aernb1h1jbn6mefrf7mjwr",
-	"ConfluxSideBeacon": "cfxtest:achr1r5n9p3xepb6c2ec94sr3cj1rezchumhvktct0",
-	"EvmSideImpl": "0x9a178d9948ef7c816e347830c06f9fff4d187955",
-	"EvmSideBeacon": "0x9e2d7de639c770e031839afeab0840f7ce65e3af"
+	"ConfluxSideImpl": "cfxtest:acbjuhbs1gwgjzy534bjd0kmsa9n1xxrmu39g6ybpr",
+	"ConfluxSideBeacon": "cfxtest:acebu18zp38twea1jnxnhaarkvguk1209p7u50gn8f",
+	"EvmSideImpl": "0x99b50ad8db8c6cbedb96dc9910dfa3a6f1875851",
+	"EvmSideBeacon": "0x77a6b739f8c04956116af527b35373f4574980c4"
 }

@@ -13,7 +13,7 @@ contract MappedToken is ERC20 {
         string memory _name,
         string memory _symbol,
         uint8 _decimals
-    ) ERC20(string(abi.encodePacked("Mapped ", _name)), _symbol, _decimals) {
+    ) ERC20(_name, _symbol, _decimals) {
         admin = _admin;
         sourceToken = _sourceToken;
     }
