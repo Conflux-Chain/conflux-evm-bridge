@@ -35,6 +35,8 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
         initialized = true;
 
         beacon = _beacon;
+
+        _transferOwnership(msg.sender);
     }
 
     function getTokenData(address _token)

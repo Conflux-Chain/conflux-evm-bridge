@@ -34,6 +34,8 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
             bytes20(evmSide),
             abi.encodeWithSelector(IEvmSide.setCfxSide.selector)
         );
+
+        _transferOwnership(msg.sender);
     }
 
     // register token metadata to evm space

@@ -3,8 +3,9 @@ pragma solidity ^0.8.0;
 
 import "./proxy/BeaconProxy.sol";
 import "./UpgradeableERC20.sol";
+import "./roles/Ownable.sol";
 
-contract MappedTokenDeployer {
+contract MappedTokenDeployer is Ownable {
     // source token => mapped token
     mapping(address => address) public mappedTokens;
     // mapped token => source token
@@ -25,7 +26,12 @@ contract MappedTokenDeployer {
                     ""
                 )
             );
-            UpgradeableERC20(mappedToken).initialize(_name, _symbol, _decimals);
+            UpgradeableERC20(mappedToken).initialize(
+                _name,
+                _symbol,
+                _decimals,
+                owner()
+            );
             mappedTokens[_token] = mappedToken;
             sourceTokens[mappedToken] = _token;
             mappedTokenList.push(_token);

@@ -12,7 +12,8 @@ contract UpgradeableERC20 is ERC20, AccessControlEnumerable {
     function initialize(
         string memory _name,
         string memory _symbol,
-        uint8 _decimals
+        uint8 _decimals,
+        address admin
     ) public {
         require(!initialized, "initialized already");
         initialized = true;
@@ -21,7 +22,7 @@ contract UpgradeableERC20 is ERC20, AccessControlEnumerable {
         setSymbol(_symbol);
         setDecimals(_decimals);
 
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(DEFAULT_ADMIN_ROLE, admin);
 
         _setupRole(MINTER_ROLE, msg.sender);
     }
