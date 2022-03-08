@@ -8,6 +8,7 @@ import "./interfaces/IConfluxSide.sol";
 import "./libraries/SafeERC20.sol";
 import "./utils/ReentrancyGuard.sol";
 import "./MappedTokenDeployer.sol";
+import "./UpgradeableERC20.sol";
 
 contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -16,9 +17,14 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
 
     address public override evmSide;
 
-    function setEvmSide(address _evmSide) public {
-        require(evmSide == address(0), "ConfluxSide: evm side set already");
+    bool public initialized;
+
+    function initialize(address _evmSide, address _beacon) public {
+        require(!initialized, "ConfluxSide: initialized");
+        initialized = true;
+
         evmSide = _evmSide;
+        beacon = _beacon;
 
         crossSpaceCall = ICrossSpaceCall(
             0x0888000000000000000000000000000000000006
@@ -138,7 +144,7 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
             )
         );
 
-        MappedToken(mappedTokens[_evmToken]).mint(msg.sender, _amount);
+        UpgradeableERC20(mappedTokens[_evmToken]).mint(msg.sender, _amount);
 
         emit CrossFromEvm(_evmToken, msg.sender, _evmAccount, _amount);
     }
@@ -155,7 +161,12 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         );
         require(_amount > 0, "ConfluxSide: invalid amount");
 
-        MappedToken(mappedTokens[_evmToken]).burn(msg.sender, _amount);
+        UpgradeableERC20(mappedTokens[_evmToken]).transferFrom(
+            msg.sender,
+            address(this),
+            _amount
+        );
+        UpgradeableERC20(mappedTokens[_evmToken]).burn(_amount);
 
         crossSpaceCall.callEVM(
             bytes20(evmSide),

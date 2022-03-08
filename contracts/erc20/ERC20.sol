@@ -68,12 +68,20 @@ contract ERC20 is Context, IERC20 {
         return _name;
     }
 
+    function setName(string memory newName) internal {
+        _name = newName;
+    }
+
     /**
      * @dev Returns the symbol of the token, usually a shorter version of the
      * name.
      */
     function symbol() public view virtual override returns (string memory) {
         return _symbol;
+    }
+
+    function setSymbol(string memory newSymbol) internal {
+        _symbol = newSymbol;
     }
 
     /**
@@ -91,6 +99,10 @@ contract ERC20 is Context, IERC20 {
      */
     function decimals() public view virtual override returns (uint8) {
         return _decimals;
+    }
+
+    function setDecimals(uint8 newDecimals) internal {
+        _decimals = newDecimals;
     }
 
     /**

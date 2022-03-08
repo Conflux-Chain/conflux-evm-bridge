@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./MappedToken.sol";
+import "./proxy/BeaconProxy.sol";
+import "./UpgradeableERC20.sol";
 
 contract MappedTokenDeployer {
     // source token => mapped token
@@ -9,6 +10,7 @@ contract MappedTokenDeployer {
     // mapped token => source token
     mapping(address => address) public sourceTokens;
     address[] public mappedTokenList;
+    address public beacon;
 
     function _deploy(
         address _token,
@@ -18,14 +20,12 @@ contract MappedTokenDeployer {
     ) internal returns (address mappedToken) {
         if (mappedTokens[_token] == address(0)) {
             mappedToken = address(
-                new MappedToken{salt: keccak256(abi.encodePacked(_token))}(
-                    address(this),
-                    _token,
-                    _name,
-                    _symbol,
-                    _decimals
+                new BeaconProxy{salt: keccak256(abi.encodePacked(_token))}(
+                    beacon,
+                    ""
                 )
             );
+            UpgradeableERC20(mappedToken).initialize(_name, _symbol, _decimals);
             mappedTokens[_token] = mappedToken;
             sourceTokens[mappedToken] = _token;
             mappedTokenList.push(_token);
