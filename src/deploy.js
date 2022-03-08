@@ -25,6 +25,14 @@ CrossSpaceCall.instance = cfx.Contract({
   address: '0x0888000000000000000000000000000000000006',
 });
 
+let UpgradeableCRC20 = JSON.parse(
+  fs.readFileSync(`${path}/UpgradeableERC20.sol/UpgradeableERC20.json`),
+);
+UpgradeableCRC20.instance = cfx.Contract({
+  bytecode: UpgradeableCRC20.bytecode,
+  abi: UpgradeableCRC20.abi,
+});
+
 let ConfluxSide = require(`${path}/ConfluxSide.sol/ConfluxSide.json`);
 ConfluxSide.instance = cfx.Contract({
   bytecode: ConfluxSide.bytecode,
@@ -33,6 +41,11 @@ ConfluxSide.instance = cfx.Contract({
 
 let EvmSide = require(`${path}/EvmSide.sol/EvmSide.json`);
 EvmSide.instance = new w3.eth.Contract(EvmSide.abi);
+
+let UpgradeableERC20 = JSON.parse(
+  fs.readFileSync(`${path}/UpgradeableERC20.sol/UpgradeableERC20.json`),
+);
+UpgradeableERC20.instance = new w3.eth.Contract(UpgradeableERC20.abi);
 
 let ConfluxFaucetToken = JSON.parse(
   fs.readFileSync(`${path}/erc20/FaucetToken.sol/FaucetToken.json`),
@@ -43,7 +56,7 @@ ConfluxFaucetToken.instance = cfx.Contract({
 });
 
 let ConfluxMappedToken = JSON.parse(
-  fs.readFileSync(`${path}/MappedToken.sol/MappedToken.json`),
+  fs.readFileSync(`${path}/UpgradeableERC20.sol/UpgradeableERC20.json`),
 );
 ConfluxMappedToken.instance = cfx.Contract({
   bytecode: ConfluxMappedToken.bytecode,
@@ -58,7 +71,7 @@ EvmFaucetToken.instance = new w3.eth.Contract(EvmFaucetToken.abi);
 let ERC20 = JSON.parse(fs.readFileSync(`${path}/erc20/ERC20.sol/ERC20.json`));
 
 let EvmMappedToken = JSON.parse(
-  fs.readFileSync(`${path}/MappedToken.sol/MappedToken.json`),
+  fs.readFileSync(`${path}/UpgradeableERC20.sol/UpgradeableERC20.json`),
 );
 EvmMappedToken.instance = new w3.eth.Contract(EvmMappedToken.abi);
 
@@ -198,7 +211,6 @@ async function sendTransaction(tx_params) {
       ++i;
       if (i % retry_round === 0) {
         console.log(`send retried ${i} times. received error: ${e}`);
-        console.log(tx_params);
       }
       await sleep(500);
     }
@@ -235,7 +247,7 @@ async function crossCfx(to) {
   );
 }
 
-async function deployInProxyCfx(data, nonce, name) {
+async function deployInProxyCfx(data, nonce, name, withProxy = true) {
   beacon.instance = cfx.Contract({
     bytecode: beacon.bytecode,
     abi: beacon.abi,
@@ -260,24 +272,20 @@ async function deployInProxyCfx(data, nonce, name) {
   ++nonce;
   console.log(`beacon: ${contractAddress[`${name}Beacon`]}`);
 
-  console.log(`deploy ${name} proxy..`);
-  let proxyData = proxy.instance.constructor(
-    beaconAddress,
-    Buffer.from('0x', 'hex'),
-  ).data;
-  receipt = await cfxTransact(proxyData, undefined, nonce);
-  console.log(receipt);
-  contractAddress[`${name}`] = getAddress(receipt.contractCreated);
-  ++nonce;
-
-  console.log(`proxy: ${contractAddress[`${name}`]}`);
-  /*proxy.instance.address = contractAddress[`${name}`];
-  beacon.instance.address = contractAddress[`${name}Beacon`]; 
-  console.log(await proxy.instance._beacon().call());
-  console.log(await beacon.instance.implementation().call());*/
+  if (withProxy) {
+    console.log(`deploy ${name} proxy..`);
+    let proxyData = proxy.instance.constructor(
+      beaconAddress,
+      Buffer.from('0x', 'hex'),
+    ).data;
+    receipt = await cfxTransact(proxyData, undefined, nonce);
+    contractAddress[`${name}`] = getAddress(receipt.contractCreated);
+    ++nonce;
+    console.log(`proxy: ${contractAddress[`${name}`]}`);
+  }
 }
 
-async function deployInProxyEVM(data, nonce, name) {
+async function deployInProxyEVM(data, nonce, name, withProxy = true) {
   beacon.instance = new w3.eth.Contract(beacon.abi);
   proxy.instance = new w3.eth.Contract(proxy.abi);
 
@@ -298,16 +306,18 @@ async function deployInProxyEVM(data, nonce, name) {
   contractAddress[`${name}Beacon`] = receipt.contractAddress.toLowerCase();
   ++nonce;
 
-  console.log(`deploy ${name} proxy..`);
-  let proxyData = proxy.instance
-    .deploy({
-      data: proxy.bytecode,
-      arguments: [beaconAddress, '0x'],
-    })
-    .encodeABI();
-  receipt = await ethTransact(proxyData, undefined, nonce);
-  contractAddress[`${name}`] = receipt.contractAddress.toLowerCase();
-  ++nonce;
+  if (withProxy) {
+    console.log(`deploy ${name} proxy..`);
+    let proxyData = proxy.instance
+      .deploy({
+        data: proxy.bytecode,
+        arguments: [beaconAddress, '0x'],
+      })
+      .encodeABI();
+    receipt = await ethTransact(proxyData, undefined, nonce);
+    contractAddress[`${name}`] = receipt.contractAddress.toLowerCase();
+    ++nonce;
+  }
 
   /*proxy.instance.options.address = contractAddress[`${name}`];
   console.log(await proxy.instance.methods._beacon().call());*/
@@ -318,6 +328,22 @@ async function deploy() {
   let evmNonce = await w3.eth.getTransactionCount(admin);
 
   let data, receipt;
+
+  console.log(`deploy UpgradeableCRC20..`);
+  data = UpgradeableCRC20.instance.constructor().data;
+  await deployInProxyCfx(data, cfxNonce, 'UpgradeableCRC20', false);
+  cfxNonce += 2;
+
+  console.log(`deploy UpgradeableERC20..`);
+  data = UpgradeableERC20.instance
+    .deploy({
+      data: UpgradeableERC20.bytecode,
+      arguments: [],
+    })
+    .encodeABI();
+  await deployInProxyEVM(data, evmNonce, 'UpgradeableERC20', false);
+  evmNonce += 2;
+
   console.log(`deploy Conflux Side..`);
   data = ConfluxSide.instance.constructor().data;
   await deployInProxyCfx(data, cfxNonce, 'ConfluxSide');
@@ -333,10 +359,20 @@ async function deploy() {
   await deployInProxyEVM(data, evmNonce, 'EvmSide');
   evmNonce += 3;
 
-  console.log(`register both side..`);
-  data = ConfluxSide.instance.setEvmSide(contractAddress.EvmSide).data;
+  console.log(`initialize cfx side..`);
+  data = ConfluxSide.instance.initialize(
+    contractAddress.EvmSide,
+    contractAddress.UpgradeableCRC20Beacon,
+  ).data;
   receipt = await cfxTransact(data, contractAddress.ConfluxSide, cfxNonce);
   ++cfxNonce;
+
+  console.log(`initialize evm side..`);
+  data = EvmSide.instance.methods
+    .initialize(contractAddress.UpgradeableERC20Beacon)
+    .encodeABI();
+  receipt = await ethTransact(data, contractAddress.EvmSide, evmNonce);
+  ++evmNonce;
 
   printContractAddress();
 }
@@ -496,6 +532,40 @@ async function faucetToken() {
   printContractAddress();
 }
 
+async function addevm() {
+  EvmFaucetToken.instance.options.address =
+    '0x54593e02c39aeff52b166bd036797d2b1478de8d';
+  let cfxNonce = Number(await cfx.getNextNonce(owner.address));
+  let evmNonce = await w3.eth.getTransactionCount(admin);
+
+  console.log(`approve EFT to EvmSide..`);
+  data = EvmFaucetToken.instance.methods
+    .approve(contractAddress.EvmSide, new BigNumber(1e18).toString(10))
+    .encodeABI();
+  await ethTransact(data, EvmFaucetToken.instance.options.address, evmNonce);
+  ++evmNonce;
+
+  console.log(`lock EFT in EvmSide..`);
+  data = EvmSide.instance.methods
+    .lockToken(
+      EvmFaucetToken.instance.options.address,
+      format.hexAddress(owner.address),
+      new BigNumber(1e18).toString(10),
+    )
+    .encodeABI();
+  await ethTransact(data, contractAddress.EvmSide, evmNonce);
+  ++evmNonce;
+
+  console.log(`cross EFT from EvmSide..`);
+  data = ConfluxSide.instance.crossFromEvm(
+    EvmFaucetToken.instance.options.address,
+    admin,
+    new BigNumber(1e18).toString(10),
+  ).data;
+  await cfxTransact(data, contractAddress.ConfluxSide, cfxNonce);
+  ++cfxNonce;
+}
+
 async function add() {
   await load();
 
@@ -503,8 +573,9 @@ async function add() {
   let evmNonce = await w3.eth.getTransactionCount(admin);
 
   let tokens = [
-    'cfxtest:acepe88unk7fvs18436178up33hb4zkuf62a9dk1gv',
-    'cfxtest:acceftennya582450e1g227dthfvp8zz1p370pvb6r',
+    //'cfxtest:acepe88unk7fvs18436178up33hb4zkuf62a9dk1gv',
+    //'cfxtest:acceftennya582450e1g227dthfvp8zz1p370pvb6r',
+    'cfxtest:achkx35n7vngfxgrm7akemk3ftzy47t61yk5nn270s',
   ];
 
   let data, receipt;
@@ -543,6 +614,8 @@ async function list() {
     tmp.decimals = (
       await ConfluxFaucetToken.instance.decimals().call()
     ).toString();
+    tmp.icon =
+      'https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/default.png';
     tokenList.core_native_tokens.push(tmp);
   }
   res = (await ConfluxSide.instance.getTokens(0).call()).result;
@@ -556,6 +629,8 @@ async function list() {
     tmp.name = await EvmFaucetToken.instance.methods.name().call();
     tmp.symbol = await EvmFaucetToken.instance.methods.symbol().call();
     tmp.decimals = await EvmFaucetToken.instance.methods.decimals().call();
+    tmp.icon =
+      'https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/default.png';
     tokenList.evm_native_tokens.push(tmp);
   }
   fs.writeFileSync(
@@ -676,6 +751,14 @@ async function withdraw() {
   await show();
   console.log('');
 
+  console.log(`approve mapped EFT to ConfluxSide..`);
+  data = ConfluxMappedToken.instance.approve(
+    contractAddress.ConfluxSide,
+    new BigNumber(1e18).toString(10),
+  ).data;
+  await cfxTransact(data, ConfluxMappedToken.instance.address, cfxNonce);
+  ++cfxNonce;
+
   console.log(`withdraw mapped EFT to EvmSide..`);
   data = ConfluxSide.instance.withdrawToEvm(
     contractAddress.EvmFaucetToken,
@@ -687,6 +770,46 @@ async function withdraw() {
 
   console.log(`done. current status:`);
   await show();
+}
+
+async function mint(cfxMintAddress = owner.address, ethMintAddress = admin) {
+  await load();
+  let cfxNonce = Number(await cfx.getNextNonce(owner.address));
+  let evmNonce = await w3.eth.getTransactionCount(admin);
+
+  console.log(`mint CFT..`);
+  data = ConfluxFaucetToken.instance.mint(
+    cfxMintAddress,
+    new BigNumber(1e20).toString(10),
+  ).data;
+  receipt = await cfxTransact(
+    data,
+    contractAddress.ConfluxFaucetToken,
+    cfxNonce,
+  );
+  ++cfxNonce;
+
+  console.log(`mint EFT..`);
+  data = EvmFaucetToken.instance.methods
+    .mint(ethMintAddress, new BigNumber(1e20).toString(10))
+    .encodeABI();
+  receipt = await ethTransact(data, contractAddress.EvmFaucetToken, evmNonce);
+  ++evmNonce;
+}
+
+async function test() {
+  console.log(
+    ConfluxSide.instance.abi.decodeData(
+      '0xccb31e2500000000000000000000000088c27bd05a7a58bafed6797efa0cce4e1d55302f000000000000000000000000fbbed826c29b88bcc428b6fa0cfe6b09086536760000000000000000000000000000000000000000000000008ac7230489e80000',
+    ),
+  );
+  let tx_params = {
+    from: 'cfxtest:aarvh6msgpzj7vv60xtrd3kskm244takfe6vwanvub',
+    to: contractAddress.ConfluxSide,
+    data:
+      '0xccb31e2500000000000000000000000088c27bd05a7a58bafed6797efa0cce4e1d55302f000000000000000000000000fbbed826c29b88bcc428b6fa0cfe6b09086536760000000000000000000000000000000000000000000000008ac7230489e80000',
+  };
+  console.log(await cfx.estimateGasAndCollateral(tx_params));
 }
 
 async function run() {
@@ -702,7 +825,10 @@ async function run() {
     .option('--cross', 'cross CFT and EFT to other side')
     .option('--withdraw', 'withdraw mapped CFT and EFT to original side')
     .option('--add', 'add tokens')
+    .option('--addevm', 'add espace tokens')
     .option('--list', 'print token list')
+    .option('--test', 'test')
+    .option('--mint', 'mint')
     .parse(process.argv);
 
   if (program.crosscfx) {
@@ -721,11 +847,21 @@ async function run() {
     add();
   } else if (program.list) {
     list();
+  } else if (program.test) {
+    test();
+  } else if (program.mint) {
+    mint(
+      'cfxtest:aajbjw3xb9u581j4hn0n15ys7t6f61kr1628kf304y',
+      '0xC3F7727723B3928a25ea354a124D71EA5180b71f',
+    );
+  } else if (program.addevm) {
+    addevm();
   }
   /*await crossCfx('0xF8298fCFA36981DD5aE401fD1d880B16464C5860');
   await crossCfx('0x34e676cC66DB8Ea20C2a42a1939b5bcf303CED72');
   await crossCfx('0x18e9316A928D7EA29CCB0E2c5927E6690DBc73fe');*/
   //await crossCfx('0x29d0068A37cb899737912CD258bc556003d7D462');
+  //await crossCfx('0x3b870994548D48db260F1aBA2D1f80F1F266f17F');
 }
 
 run();
