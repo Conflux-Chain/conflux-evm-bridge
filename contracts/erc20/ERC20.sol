@@ -43,25 +43,6 @@ contract ERC20 is Context, IERC20 {
     uint8 private _decimals;
 
     /**
-     * @dev Sets the values for {name} and {symbol}.
-     *
-     * The default value of {decimals} is 18. To select a different value for
-     * {decimals} you should overload it.
-     *
-     * All two of these values are immutable: they can only be set once during
-     * construction.
-     */
-    constructor(
-        string memory name_,
-        string memory symbol_,
-        uint8 decimals_
-    ) {
-        _name = name_;
-        _symbol = symbol_;
-        _decimals = decimals_;
-    }
-
-    /**
      * @dev Returns the name of the token.
      */
     function name() public view virtual override returns (string memory) {

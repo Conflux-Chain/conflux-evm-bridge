@@ -9,12 +9,6 @@ contract UpgradeableERC20 is ERC20, AccessControlEnumerable {
 
     bool public initialized;
 
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals
-    ) ERC20(_name, _symbol, _decimals) {}
-
     function initialize(
         string memory _name,
         string memory _symbol,
