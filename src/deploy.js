@@ -536,31 +536,10 @@ async function addevm() {
   EvmFaucetToken.instance.options.address =
     '0x54593e02c39aeff52b166bd036797d2b1478de8d';
   let cfxNonce = Number(await cfx.getNextNonce(owner.address));
-  let evmNonce = await w3.eth.getTransactionCount(admin);
 
-  console.log(`approve EFT to EvmSide..`);
-  data = EvmFaucetToken.instance.methods
-    .approve(contractAddress.EvmSide, new BigNumber(1e18).toString(10))
-    .encodeABI();
-  await ethTransact(data, EvmFaucetToken.instance.options.address, evmNonce);
-  ++evmNonce;
-
-  console.log(`lock EFT in EvmSide..`);
-  data = EvmSide.instance.methods
-    .lockToken(
-      EvmFaucetToken.instance.options.address,
-      format.hexAddress(owner.address),
-      new BigNumber(1e18).toString(10),
-    )
-    .encodeABI();
-  await ethTransact(data, contractAddress.EvmSide, evmNonce);
-  ++evmNonce;
-
-  console.log(`cross EFT from EvmSide..`);
-  data = ConfluxSide.instance.crossFromEvm(
+  console.log(`create mapped token..`);
+  data = ConfluxSide.instance.createMappedToken(
     EvmFaucetToken.instance.options.address,
-    admin,
-    new BigNumber(1e18).toString(10),
   ).data;
   await cfxTransact(data, contractAddress.ConfluxSide, cfxNonce);
   ++cfxNonce;
@@ -573,8 +552,8 @@ async function add() {
   let evmNonce = await w3.eth.getTransactionCount(admin);
 
   let tokens = [
-    //'cfxtest:acepe88unk7fvs18436178up33hb4zkuf62a9dk1gv',
-    //'cfxtest:acceftennya582450e1g227dthfvp8zz1p370pvb6r',
+    'cfxtest:acepe88unk7fvs18436178up33hb4zkuf62a9dk1gv',
+    'cfxtest:acceftennya582450e1g227dthfvp8zz1p370pvb6r',
     'cfxtest:achkx35n7vngfxgrm7akemk3ftzy47t61yk5nn270s',
   ];
 
@@ -586,7 +565,7 @@ async function add() {
     receipt = await cfxTransact(data, contractAddress.ConfluxSide, cfxNonce);
     ++cfxNonce;
 
-    console.log(`create mapped CFT in EvmSide..`);
+    console.log(`create mapped ${tokens[i]} in EvmSide..`);
     data = EvmSide.instance.methods
       .createMappedToken(format.hexAddress(tokens[i]))
       .encodeABI();
