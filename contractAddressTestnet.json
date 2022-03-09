@@ -1,10 +1,14 @@
 {
-	"ConfluxSide": "cfxtest:acb3m4j5uwss7bfd97refj8m5zf9yd12gjghfcxws9",
-	"EvmSide": "0xe512ac0a6cc28a7c38c88ba99b7fe4c7ba0be39e",
+	"ConfluxSide": "cfxtest:acgnzsg6akz548uusxahx7dxurbvfch8vyxeadfkac",
+	"EvmSide": "0xe1b1457682536eb6e28be1ac215165d48354d4e1",
 	"ConfluxFaucetToken": "cfxtest:acgcj0h8xp3ydgtmf39e5kh8ab6f3ynnajafp2y04f",
 	"EvmFaucetToken": "0xda49fdf62164fc7a4e3ce786c984bf76cb4f4498",
-	"ConfluxSideImpl": "cfxtest:acbjuhbs1gwgjzy534bjd0kmsa9n1xxrmu39g6ybpr",
-	"ConfluxSideBeacon": "cfxtest:acebu18zp38twea1jnxnhaarkvguk1209p7u50gn8f",
-	"EvmSideImpl": "0x99b50ad8db8c6cbedb96dc9910dfa3a6f1875851",
-	"EvmSideBeacon": "0x77a6b739f8c04956116af527b35373f4574980c4"
+	"ConfluxSideImpl": "cfxtest:accmwvbfjxmxahgfnhw3m9bbatxvfns7cj8b31rpjr",
+	"ConfluxSideBeacon": "cfxtest:acehdsdymgmp3dn1mdccfa59czvh1vae96yw2806th",
+	"EvmSideImpl": "0x160e6efd587465b76f1663f39b5b358babf91535",
+	"EvmSideBeacon": "0xe317da03617147b2060e1b0933a38157cb81200b",
+	"UpgradeableCRC20Impl": "cfxtest:acd76j7uckgz8k94v3zwgvc452w3rbdhbyh3kvary2",
+	"UpgradeableCRC20Beacon": "cfxtest:acfwb37b3w3v72ted4zhgsjfhwe4bga8266m48nj5j",
+	"UpgradeableERC20Impl": "0x9fabfef84ef16bf988c93d20eb65c846ad4b3420",
+	"UpgradeableERC20Beacon": "0x6bfabf632b4d9aa7e5a300b4fd6efc516f28e3a9"
 }
