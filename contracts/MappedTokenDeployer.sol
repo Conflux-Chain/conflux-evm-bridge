@@ -4,14 +4,15 @@ pragma solidity ^0.8.0;
 import "./proxy/BeaconProxy.sol";
 import "./UpgradeableERC20.sol";
 import "./roles/Ownable.sol";
+import "./interfaces/IMappedTokenDeployer.sol";
 
-contract MappedTokenDeployer is Ownable {
+contract MappedTokenDeployer is IMappedTokenDeployer, Ownable {
     // source token => mapped token
-    mapping(address => address) public mappedTokens;
+    mapping(address => address) public override mappedTokens;
     // mapped token => source token
-    mapping(address => address) public sourceTokens;
-    address[] public mappedTokenList;
-    address public beacon;
+    mapping(address => address) public override sourceTokens;
+    address[] public override mappedTokenList;
+    address public override beacon;
 
     function _deploy(
         address _token,
@@ -43,6 +44,7 @@ contract MappedTokenDeployer is Ownable {
     function getTokens(uint256 offset)
         public
         view
+        override
         returns (address[] memory result, uint256 cnt)
     {
         cnt = mappedTokenList.length;

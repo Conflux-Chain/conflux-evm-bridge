@@ -112,6 +112,44 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         emit WithdrawFromEvm(address(_token), msg.sender, _evmAccount, _amount);
     }
 
+    function createMappedToken(address _evmToken) public nonReentrant {
+        require(
+            mappedTokens[_evmToken] == address(0),
+            "ConfluxSide: already created"
+        );
+        _createMappedToken(_evmToken);
+    }
+
+    function _createMappedToken(address _evmToken) internal {
+        address t =
+            abi.decode(
+                crossSpaceCall.callEVM(
+                    bytes20(evmSide),
+                    abi.encodeWithSelector(
+                        IMappedTokenDeployer.sourceTokens.selector,
+                        _evmToken
+                    )
+                ),
+                (address)
+            );
+        require(
+            t == address(0),
+            "ConfluxSide: token is mapped from core space"
+        );
+        (string memory name, string memory symbol, uint8 decimals) =
+            abi.decode(
+                crossSpaceCall.callEVM(
+                    bytes20(evmSide),
+                    abi.encodeWithSelector(
+                        IEvmSide.getTokenData.selector,
+                        _evmToken
+                    )
+                ),
+                (string, string, uint8)
+            );
+        _deploy(_evmToken, name, symbol, decimals);
+    }
+
     // cross ERC20 from EVM space
     function crossFromEvm(
         address _evmToken,
@@ -121,18 +159,7 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         require(_amount > 0, "ConfluxSide: invalid amount");
 
         if (mappedTokens[_evmToken] == address(0)) {
-            (string memory name, string memory symbol, uint8 decimals) =
-                abi.decode(
-                    crossSpaceCall.callEVM(
-                        bytes20(evmSide),
-                        abi.encodeWithSelector(
-                            IEvmSide.getTokenData.selector,
-                            _evmToken
-                        )
-                    ),
-                    (string, string, uint8)
-                );
-            _deploy(_evmToken, name, symbol, decimals);
+            _createMappedToken(_evmToken);
         }
 
         crossSpaceCall.callEVM(
