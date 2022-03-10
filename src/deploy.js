@@ -323,6 +323,52 @@ async function deployInProxyEVM(data, nonce, name, withProxy = true) {
   console.log(await proxy.instance.methods._beacon().call());*/
 }
 
+async function upgrade() {
+  let cfxNonce = Number(await cfx.getNextNonce(owner.address));
+  let evmNonce = await w3.eth.getTransactionCount(admin);
+
+  let data, receipt;
+
+  console.log(`deploy UpgradeableCRC20..`);
+  data = UpgradeableCRC20.instance.constructor().data;
+  receipt = await cfxTransact(data, undefined, cfxNonce);
+  contractAddress[`UpgradeableCRC20Impl`] = getAddress(receipt.contractCreated);
+  ++cfxNonce;
+
+  beacon.instance = cfx.Contract({
+    bytecode: beacon.bytecode,
+    abi: beacon.abi,
+  });
+  console.log(`upgrade..`);
+  data = beacon.instance.upgradeTo(contractAddress[`UpgradeableCRC20Impl`])
+    .data;
+  await cfxTransact(data, contractAddress.UpgradeableCRC20Beacon, cfxNonce);
+  ++cfxNonce;
+
+  console.log(`deploy UpgradeableERC20..`);
+  data = UpgradeableERC20.instance
+    .deploy({
+      data: UpgradeableERC20.bytecode,
+      arguments: [],
+    })
+    .encodeABI();
+  receipt = await ethTransact(data, undefined, evmNonce);
+  contractAddress[
+    `UpgradeableERC20Impl`
+  ] = receipt.contractAddress.toLowerCase();
+  ++evmNonce;
+
+  beacon.instance = new w3.eth.Contract(beacon.abi);
+  console.log(`upgrade..`);
+  data = beacon.instance.methods
+    .upgradeTo(contractAddress[`UpgradeableERC20Impl`])
+    .encodeABI();
+  await ethTransact(data, contractAddress.UpgradeableERC20Beacon, evmNonce);
+  ++evmNonce;
+  console.log(`done..`);
+  printContractAddress();
+}
+
 async function deploy() {
   let cfxNonce = Number(await cfx.getNextNonce(owner.address));
   let evmNonce = await w3.eth.getTransactionCount(admin);
@@ -543,6 +589,24 @@ async function addevm() {
   ).data;
   await cfxTransact(data, contractAddress.ConfluxSide, cfxNonce);
   ++cfxNonce;
+}
+
+async function grantMinterRole() {
+  UpgradeableERC20.instance.options.address =
+    '0x2eeb7e2B0248AC9B3bFF5F3A1aA3Ad06eF7e675D';
+  let addr = '0xd66289f53223ed42bd7aeb9b545f9bc48c2a349d';
+
+  let evmNonce = await w3.eth.getTransactionCount(admin);
+
+  let data, receipt;
+  let MINTER_ROLE = await UpgradeableERC20.instance.methods
+    .MINTER_ROLE()
+    .call();
+  data = UpgradeableERC20.instance.methods
+    .grantRole(MINTER_ROLE, addr)
+    .encodeABI();
+  await ethTransact(data, UpgradeableERC20.instance.options.address, evmNonce);
+  console.log(`done`);
 }
 
 async function add() {
@@ -777,18 +841,72 @@ async function mint(cfxMintAddress = owner.address, ethMintAddress = admin) {
 }
 
 async function test() {
-  console.log(
-    ConfluxSide.instance.abi.decodeData(
-      '0xccb31e2500000000000000000000000088c27bd05a7a58bafed6797efa0cce4e1d55302f000000000000000000000000fbbed826c29b88bcc428b6fa0cfe6b09086536760000000000000000000000000000000000000000000000008ac7230489e80000',
-    ),
-  );
-  let tx_params = {
-    from: 'cfxtest:aarvh6msgpzj7vv60xtrd3kskm244takfe6vwanvub',
-    to: contractAddress.ConfluxSide,
-    data:
-      '0xccb31e2500000000000000000000000088c27bd05a7a58bafed6797efa0cce4e1d55302f000000000000000000000000fbbed826c29b88bcc428b6fa0cfe6b09086536760000000000000000000000000000000000000000000000008ac7230489e80000',
-  };
-  console.log(await cfx.estimateGasAndCollateral(tx_params));
+  let cfxNonce = Number(await cfx.getNextNonce(owner.address));
+  let evmNonce = await w3.eth.getTransactionCount(admin);
+
+  let cfxTokens = [
+    'cfxtest:acby2hxk08tfdu42pe1hn7x7vg7ywruywy1ga2hehw',
+    'cfxtest:ach8z0z6ymhseumnv9t0b6y6zws2p607kyycpz23uv',
+  ];
+
+  let evmTokens = [
+    '0xc229b45761C0F960A8d6cD4f770E7065528d150A',
+    '0x2eeb7e2B0248AC9B3bFF5F3A1aA3Ad06eF7e675D',
+    '0x26AEe1DEe904c9D20bF6828950633174223D5216',
+    '0xd6A432c616cE42Aa15E32aC5c0998112Accae76A',
+  ];
+
+  UpgradeableERC20.instance.options.address = evmTokens[0];
+  let MINTER_ROLE = await UpgradeableERC20.instance.methods
+    .MINTER_ROLE()
+    .call();
+  let maxInt =
+    '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+
+  let data;
+  for (let i = 0; i < cfxTokens.length; ++i) {
+    UpgradeableCRC20.instance.address = cfxTokens[i];
+    let cnt = await UpgradeableCRC20.instance
+      .getRoleMemberCount(Buffer.from(MINTER_ROLE.substring(2), 'hex'))
+      .call();
+    for (let j = 0; j < cnt; ++j) {
+      let member = await UpgradeableCRC20.instance
+        .getRoleMember(Buffer.from(MINTER_ROLE.substring(2), 'hex'), j)
+        .call();
+      let cap = new BigNumber(1e18).multipliedBy(1e7).toString(10);
+      if (j === 0) cap = maxInt;
+      console.log(
+        `setting ${cfxTokens[i]} token ${member} mint cap to ${cap}..`,
+      );
+      data = UpgradeableCRC20.instance.setMinterCap(member, cap).data;
+      await cfxTransact(data, cfxTokens[i], cfxNonce);
+      ++cfxNonce;
+    }
+  }
+
+  for (let i = 0; i < evmTokens.length; ++i) {
+    UpgradeableERC20.instance.options.address = evmTokens[i];
+    let cnt = await UpgradeableERC20.instance.methods
+      .getRoleMemberCount(MINTER_ROLE)
+      .call();
+    for (let j = 0; j < cnt; ++j) {
+      let member = await UpgradeableERC20.instance.methods
+        .getRoleMember(MINTER_ROLE, j)
+        .call();
+      let cap = new BigNumber(1e18).multipliedBy(1e7).toString(10);
+      if (j === 0) cap = maxInt;
+      console.log(
+        `setting ${evmTokens[i]} token ${member} mint cap to ${cap}..`,
+      );
+      data = UpgradeableERC20.instance.methods
+        .setMinterCap(member, cap)
+        .encodeABI();
+      await ethTransact(data, evmTokens[i], evmNonce);
+      ++evmNonce;
+    }
+  }
+
+  console.log('done.');
 }
 
 async function run() {
@@ -808,6 +926,8 @@ async function run() {
     .option('--list', 'print token list')
     .option('--test', 'test')
     .option('--mint', 'mint')
+    .option('--grantMinter', 'grant minter role')
+    .option('--upgrade', 'upgrade')
     .parse(process.argv);
 
   if (program.crosscfx) {
@@ -835,6 +955,10 @@ async function run() {
     );
   } else if (program.addevm) {
     addevm();
+  } else if (program.grantMinter) {
+    grantMinterRole();
+  } else if (program.upgrade) {
+    upgrade();
   }
   /*await crossCfx('0xF8298fCFA36981DD5aE401fD1d880B16464C5860');
   await crossCfx('0x34e676cC66DB8Ea20C2a42a1939b5bcf303CED72');

@@ -7,8 +7,8 @@
 	"ConfluxSideBeacon": "cfxtest:acehdsdymgmp3dn1mdccfa59czvh1vae96yw2806th",
 	"EvmSideImpl": "0x160e6efd587465b76f1663f39b5b358babf91535",
 	"EvmSideBeacon": "0xe317da03617147b2060e1b0933a38157cb81200b",
-	"UpgradeableCRC20Impl": "cfxtest:acd76j7uckgz8k94v3zwgvc452w3rbdhbyh3kvary2",
+	"UpgradeableCRC20Impl": "cfxtest:acfj2scuxeg4ubrg5fpf7ztpg0ffdavhjaf7bvjct2",
 	"UpgradeableCRC20Beacon": "cfxtest:acfwb37b3w3v72ted4zhgsjfhwe4bga8266m48nj5j",
-	"UpgradeableERC20Impl": "0x9fabfef84ef16bf988c93d20eb65c846ad4b3420",
+	"UpgradeableERC20Impl": "0xeb6b1100d86df86d85be471312e92548ed07d483",
 	"UpgradeableERC20Beacon": "0x6bfabf632b4d9aa7e5a300b4fd6efc516f28e3a9"
 }

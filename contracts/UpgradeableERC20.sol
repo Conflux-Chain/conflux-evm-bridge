@@ -12,10 +12,19 @@ contract UpgradeableERC20 is
     ERC20Pausable,
     AccessControlEnumerable
 {
+    struct Supply {
+        uint256 cap;
+        uint256 total;
+    }
+
+    event MinterCapUpdated(address indexed minter, uint256 cap);
+
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
     bool public initialized;
+
+    mapping(address => Supply) public minterSupply;
 
     function initialize(
         string memory _name,
@@ -34,6 +43,9 @@ contract UpgradeableERC20 is
         _setupRole(PAUSER_ROLE, admin);
 
         _setupRole(MINTER_ROLE, _msgSender());
+
+        minterSupply[_msgSender()].cap = type(uint256).max;
+        emit MinterCapUpdated(_msgSender(), type(uint256).max);
     }
 
     /**
@@ -50,7 +62,22 @@ contract UpgradeableERC20 is
             hasRole(MINTER_ROLE, _msgSender()),
             "UpgradeableERC20: must have minter role to mint"
         );
+        Supply storage s = minterSupply[msg.sender];
+        s.total += amount;
+        require(s.total <= s.cap, "UpgradeableERC20: minter cap exceeded");
         _mint(to, amount);
+    }
+
+    function getMinterCap(address minter) external view returns (uint256) {
+        return minterSupply[minter].cap;
+    }
+
+    function setMinterCap(address minter, uint256 cap)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        minterSupply[minter].cap = cap;
+        emit MinterCapUpdated(minter, cap);
     }
 
     /**
