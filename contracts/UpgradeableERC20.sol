@@ -80,6 +80,14 @@ contract UpgradeableERC20 is
         emit MinterCapUpdated(minter, cap);
     }
 
+    function setMetadata(string memory _name, string memory _symbol)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        setName(_name);
+        setSymbol(_symbol);
+    }
+
     /**
      * @dev Pauses all token transfers.
      *
