@@ -3,40 +3,50 @@
 		{
 			"native_address": "cfx:acf2rcsh8payyxpg6xj7b0ztswwh81ute60tsw35j7",
 			"mapped_address": "0xfe97E85d13ABD9c1c33384E796F10B73905637cE",
-			"name": "Tether USD",
-			"symbol": "USDT",
+			"core_space_name": "conflux USDT",
+			"core_space_symbol": "cUSDT",
+			"evm_space_name": "Tether USD",
+			"evm_space_symbol": "USDT",
 			"decimals": "18",
 			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/0xdac17f958d2ee523a2206206994597c13d831ec7.png"
 		},
 		{
 			"native_address": "cfx:acdrf821t59y12b4guyzckyuw2xf1gfpj2ba0x4sj6",
 			"mapped_address": "0xa47f43DE2f9623aCb395CA4905746496D2014d57",
-			"name": "Ethereum Token",
-			"symbol": "ETH",
+			"core_space_name": "conflux ETH",
+			"core_space_symbol": "cETH",
+			"evm_space_name": "Ethereum Token",
+			"evm_space_symbol": "ETH",
 			"decimals": "18",
       "icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/eth.png"
 		},
 		{
 			"native_address": "cfx:acg7z3y6x8pzem2v6pnyxuysn78pvgu3jjhzaatpy5",
 			"mapped_address": "0x1F545487c62e5ACfEa45dcAdd9c627361d1616D8",
-			"name": "Wrapped BTC",
-			"symbol": "WBTC",
+			"core_space_name": "conflux WBTC",
+			"core_space_symbol": "cWBTC",
+			"evm_space_name": "Wrapped BTC",
+			"evm_space_symbol": "WBTC",
 			"decimals": "18",
 			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/btc.png"
 		},
 		{
 			"native_address": "cfx:aca13suyk7mbgxw9y3wbjn9vd136swu6s21tg67xmb",
 			"mapped_address": "0x6963EfED0aB40F6C3d7BdA44A05dcf1437C44372",
-			"name": "USD Coin",
-			"symbol": "USDC",
+			"core_space_name": "conflux USDC",
+			"core_space_symbol": "cUSDC",
+			"evm_space_name": "USD Coin",
+			"evm_space_symbol": "USDC",
 			"decimals": "18",
       "icon":"https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png"
 		},
 		{
 			"native_address": "cfx:acd3fhs4u0yzx7kpzrujhj15yg63st2z6athmtka95",
 			"mapped_address": "0x74eaE367d018A5F29be559752e4B67d01cc6b151",
-			"name": "Dai Stablecoin",
-			"symbol": "DAI",
+			"core_space_name": "conflux DAI",
+			"core_space_symbol": "cDAI",
+			"evm_space_name": "Dai Stablecoin",
+			"evm_space_symbol": "DAI",
 			"decimals": "18",
       "icon":"https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/0x6b175474e89094c44da98b954eedeac495271d0f.png"
 		}
