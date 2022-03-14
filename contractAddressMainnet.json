@@ -1,0 +1,13 @@
+{
+	"UpgradeableCRC20Impl": "cfx:ace0hgnfag11shj17e9zgvxzma4ptdwjupg19bkgmk",
+	"UpgradeableCRC20Beacon": "cfx:achj3ct33kb30sh36g5ct4d3h6cky52xjucz854twb",
+	"UpgradeableERC20Impl": "0xb00dfcfd1b24fef2fdc6b1eb9227be18db9ca5d8",
+	"UpgradeableERC20Beacon": "0x50bc460bfd2f13ff079298a094b00c457c33cef4",
+	"ConfluxSideImpl": "cfx:acg69m9cxw14rdfj6958p4ngrruz2swfdu8gcj9a26",
+	"ConfluxSideBeacon": "cfx:acfgr02jjn6dhn6g29ye4038vbmmj5fphem7z1zbsa",
+	"ConfluxSide": "cfx:acfcrckktgx99scxwr6jtjx81yhm4ggsfatprwzb3x",
+	"EvmSideImpl": "0xe254a9637a4cb07777fa07a6eb4892eb07e2db94",
+	"EvmSideBeacon": "0xbe445bb5e4b4f4cbf0479605c4ef2adb26972090",
+	"EvmSide": "0x4f9e3186513224cf152016ccd86019e7b9a3c809",
+	"KuCoin Token": "0xf01042c4a5e69bd1d8ed69c1a4765ffb0cf7acce"
+}
