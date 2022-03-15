@@ -1,7 +1,7 @@
 {
-	"UpgradeableCRC20Impl": "cfx:ace0hgnfag11shj17e9zgvxzma4ptdwjupg19bkgmk",
+	"UpgradeableCRC20Impl": "cfx:accjf2djy10zpjas5x4y746fb9hpnv8nbjvnsnw8xj",
 	"UpgradeableCRC20Beacon": "cfx:achj3ct33kb30sh36g5ct4d3h6cky52xjucz854twb",
-	"UpgradeableERC20Impl": "0xb00dfcfd1b24fef2fdc6b1eb9227be18db9ca5d8",
+	"UpgradeableERC20Impl": "0xe7fdcb6628cf5bacb43b2c45d0fe9ea0233c9a61",
 	"UpgradeableERC20Beacon": "0x50bc460bfd2f13ff079298a094b00c457c33cef4",
 	"ConfluxSideImpl": "cfx:acg69m9cxw14rdfj6958p4ngrruz2swfdu8gcj9a26",
 	"ConfluxSideBeacon": "cfx:acfgr02jjn6dhn6g29ye4038vbmmj5fphem7z1zbsa",
