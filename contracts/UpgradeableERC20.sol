@@ -88,6 +88,12 @@ contract UpgradeableERC20 is
         setSymbol(_symbol);
     }
 
+    // alternative burn function, same as burnFrom
+    function burn(address account, uint256 amount) public virtual {
+        _spendAllowance(account, _msgSender(), amount);
+        _burn(account, amount);
+    }
+
     /**
      * @dev Pauses all token transfers.
      *
