@@ -238,7 +238,7 @@ async function crossCfx(to) {
     data,
     CrossSpaceCall.instance.address,
     nonce,
-    new BigNumber(1e22).toString(10),
+    new BigNumber(1e19).toString(10),
   );
   console.log(
     `balance: ${new BigNumber(await w3.eth.getBalance(to))
@@ -426,6 +426,7 @@ async function deploy() {
 async function load() {
   ConfluxSide.instance.address = contractAddress.ConfluxSide;
   EvmSide.instance.options.address = contractAddress.EvmSide;
+  /*
   ConfluxFaucetToken.instance.address = contractAddress.ConfluxFaucetToken;
   EvmFaucetToken.instance.options.address = contractAddress.EvmFaucetToken;
   let mappedEFT = await ConfluxSide.instance
@@ -440,6 +441,7 @@ async function load() {
   if (mappedCFT !== addr0) {
     EvmMappedToken.instance.options.address = mappedCFT;
   }
+  */
 }
 
 async function show() {
@@ -592,20 +594,69 @@ async function addevm() {
 }
 
 async function grantMinterRole() {
-  UpgradeableERC20.instance.options.address =
-    '0x2eeb7e2B0248AC9B3bFF5F3A1aA3Ad06eF7e675D';
-  let addr = '0xd66289f53223ed42bd7aeb9b545f9bc48c2a349d';
-
+  let tokens = [
+    {
+      symbol: 'USDT',
+      address: '0xfe97E85d13ABD9c1c33384E796F10B73905637cE',
+      cap: '50000000',
+      minter: '0x639a647fbe20b6c8ac19e48e2de44ea792c62c5c',
+    },
+    {
+      symbol: 'WBTC',
+      address: '0x1F545487c62e5ACfEa45dcAdd9c627361d1616D8',
+      cap: '1400',
+      minter: '0x6ab6d61428fde76768d7b45d8bfeec19c6ef91a8',
+    },
+    {
+      symbol: 'DAI',
+      address: '0x74eaE367d018A5F29be559752e4B67d01cc6b151',
+      cap: '50000000',
+      minter: '0x80a16016cc4a2e6a2caca8a4a498b1699ff0f844',
+    },
+    {
+      symbol: 'USDC',
+      address: '0x6963EfED0aB40F6C3d7BdA44A05dcf1437C44372',
+      cap: '50000000',
+      minter: '0xb44a9b6905af7c801311e8f4e76932ee959c663c',
+    },
+    {
+      symbol: 'ETH',
+      address: '0xa47f43DE2f9623aCb395CA4905746496D2014d57',
+      cap: '20000',
+      minter: '0xe3f5a90f9cb311505cd691a46596599aa1a0ad7d',
+    },
+    {
+      symbol: 'KCS',
+      address: '0xf01042c4a5e69bd1d8ed69c1a4765ffb0cf7acce',
+      cap: '3000000',
+      minter: '0x2bf9b864cdc97b08b6d79ad4663e71b8ab65c45c',
+    },
+  ];
   let evmNonce = await w3.eth.getTransactionCount(admin);
+  for (let i = 0; i < tokens.length; ++i) {
+    UpgradeableERC20.instance.options.address = tokens[i].address;
 
-  let data, receipt;
-  let MINTER_ROLE = await UpgradeableERC20.instance.methods
-    .MINTER_ROLE()
-    .call();
-  data = UpgradeableERC20.instance.methods
-    .grantRole(MINTER_ROLE, addr)
-    .encodeABI();
-  await ethTransact(data, UpgradeableERC20.instance.options.address, evmNonce);
+    let data, receipt;
+    console.log(`grant minter role of ${tokens[i].symbol}`);
+    let MINTER_ROLE = await UpgradeableERC20.instance.methods
+      .MINTER_ROLE()
+      .call();
+    data = UpgradeableERC20.instance.methods
+      .grantRole(MINTER_ROLE, tokens[i].minter)
+      .encodeABI();
+    await ethTransact(data, tokens[i].address, evmNonce);
+    ++evmNonce;
+
+    console.log(`set mint cap..`);
+    data = UpgradeableERC20.instance.methods
+      .setMinterCap(
+        tokens[i].minter,
+        new BigNumber(tokens[i].cap).multipliedBy(1e18).toString(10),
+      )
+      .encodeABI();
+    await ethTransact(data, tokens[i].address, evmNonce);
+    ++evmNonce;
+  }
   console.log(`done`);
 }
 
@@ -615,10 +666,28 @@ async function add() {
   let cfxNonce = Number(await cfx.getNextNonce(owner.address));
   let evmNonce = await w3.eth.getTransactionCount(admin);
 
+  // testnet
+
+  /*
   let tokens = [
+    'cfxtest:ach727k1wt7kmj633hc1fcrrgbajmargkaxyycf6ee',
     'cfxtest:acepe88unk7fvs18436178up33hb4zkuf62a9dk1gv',
     'cfxtest:acceftennya582450e1g227dthfvp8zz1p370pvb6r',
     'cfxtest:achkx35n7vngfxgrm7akemk3ftzy47t61yk5nn270s',
+  ];
+  */
+
+  // mainnet
+
+  let tokens = [
+    /*
+    'cfx:acf2rcsh8payyxpg6xj7b0ztswwh81ute60tsw35j7', // cUSDT
+    'cfx:acdrf821t59y12b4guyzckyuw2xf1gfpj2ba0x4sj6', // cETH
+    'cfx:acbb225r9wc7a2kt1dz9gw0tuv5v1kgdjuh5akdh3t', // cBTC
+    'cfx:aca13suyk7mbgxw9y3wbjn9vd136swu6s21tg67xmb', // cUSDC
+    'cfx:acd3fhs4u0yzx7kpzrujhj15yg63st2z6athmtka95', // cDAI
+    */
+    'cfx:acg7z3y6x8pzem2v6pnyxuysn78pvgu3jjhzaatpy5', // WBTC
   ];
 
   let data, receipt;
@@ -652,11 +721,14 @@ async function list() {
       .mappedTokens(res[i])
       .call();
     ConfluxFaucetToken.instance.address = tmp.native_address;
-    tmp.name = await ConfluxFaucetToken.instance.name().call();
-    tmp.symbol = await ConfluxFaucetToken.instance.symbol().call();
-    tmp.decimals = (
-      await ConfluxFaucetToken.instance.decimals().call()
-    ).toString();
+    tmp.core_space_name = await ConfluxFaucetToken.instance.name().call();
+    tmp.core_space_symbol = await ConfluxFaucetToken.instance.symbol().call();
+    EvmFaucetToken.instance.options.address = tmp.mapped_address;
+    tmp.evm_space_name = await EvmFaucetToken.instance.methods.name().call();
+    tmp.evm_space_symbol = await EvmFaucetToken.instance.methods
+      .symbol()
+      .call();
+    tmp.decimals = await EvmFaucetToken.instance.methods.decimals().call();
     tmp.icon =
       'https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/default.png';
     tokenList.core_native_tokens.push(tmp);
@@ -668,16 +740,21 @@ async function list() {
     tmp.mapped_address = getAddress(
       await ConfluxSide.instance.mappedTokens(res[i]).call(),
     );
+    ConfluxFaucetToken.instance.address = tmp.mapped_address;
+    tmp.core_space_name = await ConfluxFaucetToken.instance.name().call();
+    tmp.core_space_symbol = await ConfluxFaucetToken.instance.symbol().call();
     EvmFaucetToken.instance.options.address = tmp.native_address;
-    tmp.name = await EvmFaucetToken.instance.methods.name().call();
-    tmp.symbol = await EvmFaucetToken.instance.methods.symbol().call();
+    tmp.evm_space_name = await EvmFaucetToken.instance.methods.name().call();
+    tmp.evm_space_symbol = await EvmFaucetToken.instance.methods
+      .symbol()
+      .call();
     tmp.decimals = await EvmFaucetToken.instance.methods.decimals().call();
     tmp.icon =
       'https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/default.png';
     tokenList.evm_native_tokens.push(tmp);
   }
   fs.writeFileSync(
-    __dirname + '/../native_token_list_testnet.json',
+    __dirname + '/../tmp.json',
     JSON.stringify(tokenList, null, '\t'),
   );
 }
@@ -909,6 +986,141 @@ async function test() {
   console.log('done.');
 }
 
+async function token() {
+  let nonce = await w3.eth.getTransactionCount(admin);
+  proxy.instance = new w3.eth.Contract(proxy.abi);
+
+  let name = 'KuCoin Token';
+  let symbol = 'KCS';
+
+  let beaconAddress = contractAddress.UpgradeableERC20Beacon;
+
+  console.log(`deploy ${name} proxy..`);
+  let data = proxy.instance
+    .deploy({
+      data: proxy.bytecode,
+      arguments: [beaconAddress, '0x'],
+    })
+    .encodeABI();
+  receipt = await ethTransact(data, undefined, nonce);
+  contractAddress[`${name}`] = receipt.contractAddress.toLowerCase();
+  ++nonce;
+
+  console.log(`initialize..`);
+  data = UpgradeableERC20.instance.methods
+    .initialize(name, symbol, 18, admin)
+    .encodeABI();
+  await ethTransact(data, contractAddress[`${name}`], nonce);
+  ++nonce;
+
+  printContractAddress();
+}
+
+async function transferOwnershipCfx(name, to, nonce) {
+  console.log(`transfer ownership of ${name} to ${to}..`);
+  data = ConfluxSide.instance.transferOwnership(to).data;
+  await cfxTransact(data, contractAddress[name], nonce);
+}
+
+async function transferOwnershipEth(name, to, nonce) {
+  console.log(`transfer ownership of ${name} to ${to}..`);
+  data = EvmSide.instance.methods.transferOwnership(to).encodeABI();
+  await ethTransact(data, contractAddress[name], nonce);
+}
+
+async function ownership() {
+  await load();
+  let cfxNonce = Number(await cfx.getNextNonce(owner.address));
+  let evmNonce = await w3.eth.getTransactionCount(admin);
+
+  let data, receipt, res;
+  let DEFAULT_ADMIN_ROLE =
+    '0x0000000000000000000000000000000000000000000000000000000000000000';
+
+  await transferOwnershipCfx(
+    `ConfluxSide`,
+    contractAddress.ConfluxSafe,
+    cfxNonce,
+  );
+  ++cfxNonce;
+  await transferOwnershipCfx(
+    `ConfluxSideBeacon`,
+    contractAddress.ConfluxTimelock,
+    cfxNonce,
+  );
+  ++cfxNonce;
+  await transferOwnershipCfx(
+    `UpgradeableCRC20Beacon`,
+    contractAddress.ConfluxTimelock,
+    cfxNonce,
+  );
+  ++cfxNonce;
+
+  await transferOwnershipEth(`EvmSide`, contractAddress.EvmSafe, evmNonce);
+  ++evmNonce;
+  await transferOwnershipEth(
+    `EvmSideBeacon`,
+    contractAddress.EvmTimelock,
+    evmNonce,
+  );
+  ++evmNonce;
+  await transferOwnershipEth(
+    `UpgradeableERC20Beacon`,
+    contractAddress.EvmTimelock,
+    evmNonce,
+  );
+  ++evmNonce;
+
+  res = (await EvmSide.instance.methods.getTokens(0).call()).result;
+  let DEFAULT_ADMIN_ROLE =
+    '0x0000000000000000000000000000000000000000000000000000000000000000';
+  for (let i = 0; i < res.length; ++i) {
+    let mapped_address = await EvmSide.instance.methods
+      .mappedTokens(res[i])
+      .call();
+    EvmFaucetToken.instance.options.address = mapped_address;
+    let symbol = await EvmFaucetToken.instance.methods.symbol().call();
+
+    console.log(`grant DEFAULT_ADMIN_ROLE of ${symbol} to EvmSafe..`);
+    let data = UpgradeableERC20.instance.methods
+      .grantRole(DEFAULT_ADMIN_ROLE, contractAddress.EvmSafe)
+      .encodeABI();
+    await ethTransact(data, mapped_address, evmNonce);
+    ++evmNonce;
+
+    console.log(`revoke DEFAULT_ADMIN_ROLE of ${symbol}..`);
+    data = UpgradeableERC20.instance.methods
+      .renounceRole(DEFAULT_ADMIN_ROLE, admin)
+      .encodeABI();
+    await ethTransact(data, mapped_address, evmNonce);
+    ++evmNonce;
+  }
+
+  res = (await ConfluxSide.instance.getTokens(0).call()).result;
+  for (let i = 0; i < res.length; ++i) {
+    let mapped_address = await ConfluxSide.instance.mappedTokens(res[i]).call();
+    ConfluxFaucetToken.instance.address = mapped_address;
+    let symbol = await ConfluxFaucetToken.instance.symbol().call();
+
+    console.log(`grant DEFAULT_ADMIN_ROLE of ${symbol} to ConfluxSafe..`);
+    let data = UpgradeableCRC20.instance.grantRole(
+      Buffer.from(DEFAULT_ADMIN_ROLE.substring(2), 'hex'),
+      contractAddress.ConfluxSafe,
+    ).data;
+    await cfxTransact(data, mapped_address, cfxNonce);
+    ++cfxNonce;
+
+    console.log(`revoke DEFAULT_ADMIN_ROLE of ${symbol}..`);
+    data = UpgradeableCRC20.instance.renounceRole(
+      Buffer.from(DEFAULT_ADMIN_ROLE.substring(2), 'hex'),
+      owner.address,
+    ).data;
+    await cfxTransact(data, mapped_address, cfxNonce);
+    ++cfxNonce;
+  }
+  console.log(`done`);
+}
+
 async function run() {
   await cfx.updateNetworkId();
   owner = cfx.wallet.addPrivateKey(config.adminKey);
@@ -928,6 +1140,8 @@ async function run() {
     .option('--mint', 'mint')
     .option('--grantMinter', 'grant minter role')
     .option('--upgrade', 'upgrade')
+    .option('--token', 'deploy token')
+    .option('--ownership', 'change ownership')
     .parse(process.argv);
 
   if (program.crosscfx) {
@@ -959,12 +1173,17 @@ async function run() {
     grantMinterRole();
   } else if (program.upgrade) {
     upgrade();
+  } else if (program.token) {
+    token();
+  } else if (program.ownership) {
+    ownership();
   }
   /*await crossCfx('0xF8298fCFA36981DD5aE401fD1d880B16464C5860');
   await crossCfx('0x34e676cC66DB8Ea20C2a42a1939b5bcf303CED72');
   await crossCfx('0x18e9316A928D7EA29CCB0E2c5927E6690DBc73fe');*/
   //await crossCfx('0x29d0068A37cb899737912CD258bc556003d7D462');
   //await crossCfx('0x3b870994548D48db260F1aBA2D1f80F1F266f17F');
+  //await crossCfx('0xe8dc5b188c81c85751d624680ef81493bb58bb2c');
 }
 
 run();

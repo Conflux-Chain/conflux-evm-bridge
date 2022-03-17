@@ -10,5 +10,9 @@
 	"UpgradeableCRC20Impl": "cfxtest:acaztxa67vfjutjxpetnu4xxp0w5sp7s5pg31k5b88",
 	"UpgradeableCRC20Beacon": "cfxtest:acfwb37b3w3v72ted4zhgsjfhwe4bga8266m48nj5j",
 	"UpgradeableERC20Impl": "0x2a445fcca5402a9caf8c275fd492e05464dc032d",
-	"UpgradeableERC20Beacon": "0x6bfabf632b4d9aa7e5a300b4fd6efc516f28e3a9"
+	"UpgradeableERC20Beacon": "0x6bfabf632b4d9aa7e5a300b4fd6efc516f28e3a9",
+	"ConfluxTimelock": "cfxtest:acfpc47tca4k5ehvfsvrz5jnyza1b0erc6yy2emff2",
+	"EvmTimelock": "0x59b249741c196dd10e8511a1c60bcc7ce7fe29cc",
+	"ConfluxSafe": "cfxtest:acg7r5bgj735z5bwa6rjm0xrfv243ywmeytkatya3w",
+	"EvmSafe": "0x7E70115d2dae4d07aa3b62c73f0a60077DF70F9D"
 }
