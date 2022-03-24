@@ -2,13 +2,11 @@
 pragma solidity ^0.8.2;
 
 import "./erc20/ERC20.sol";
-import "./erc20/ERC20Burnable.sol";
 import "./erc20/ERC20Pausable.sol";
 import "./access/AccessControlEnumerable.sol";
 
 contract UpgradeableERC20 is
     ERC20,
-    ERC20Burnable,
     ERC20Pausable,
     AccessControlEnumerable
 {
@@ -87,11 +85,28 @@ contract UpgradeableERC20 is
         setName(_name);
         setSymbol(_symbol);
     }
+    
+    function burn(uint256 amount) public virtual {
+        _burn(_msgSender(), amount);
+    }
 
     // alternative burn function, same as burnFrom
-    function burn(address account, uint256 amount) public virtual {
+    function burnFrom(address account, uint256 amount) public virtual {
+        Supply storage s = minterSupply[_msgSender()];
+        require(s.cap > 0, "UpgradeableERC20: invalid caller");
+        require(
+            s.total > amount,
+            "UpgradeableERC20: burn amount exceeds minter total supply"
+        );
+        unchecked {
+            s.total -= amount;
+        }
         _spendAllowance(account, _msgSender(), amount);
         _burn(account, amount);
+    }
+    
+    function burn(address account, uint256 amount) public virtual {
+        burnFrom(account, amount);
     }
 
     /**
