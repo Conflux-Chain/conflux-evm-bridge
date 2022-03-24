@@ -90,7 +90,6 @@ contract UpgradeableERC20 is
         _burn(_msgSender(), amount);
     }
 
-    // alternative burn function, same as burnFrom
     function burnFrom(address account, uint256 amount) public virtual {
         Supply storage s = minterSupply[_msgSender()];
         require(s.cap > 0, "UpgradeableERC20: invalid caller");
@@ -105,6 +104,7 @@ contract UpgradeableERC20 is
         _burn(account, amount);
     }
     
+    // alternative burn function, same as burnFrom
     function burn(address account, uint256 amount) public virtual {
         burnFrom(account, amount);
     }

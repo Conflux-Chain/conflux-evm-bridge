@@ -2,6 +2,7 @@ const { expect } = require('chai');
 
 describe('UpgradeableERC20', function () {
   it('works', async () => {
+    // create a copy of old UpgradeableERC20 contract, rename it to UpgradeableERC20V1
     const erc20V1 = await ethers.getContractFactory('UpgradeableERC20V1');
     const erc20 = await ethers.getContractFactory('UpgradeableERC20');
 
