@@ -92,13 +92,14 @@ contract UpgradeableERC20 is
 
     function burnFrom(address account, uint256 amount) public virtual {
         Supply storage s = minterSupply[_msgSender()];
-        require(s.cap > 0, "UpgradeableERC20: invalid caller");
-        require(
-            s.total > amount,
-            "UpgradeableERC20: burn amount exceeds minter total supply"
-        );
-        unchecked {
-            s.total -= amount;
+        if(s.cap > 0 || s.total > 0){
+            require(
+                s.total >= amount,
+                "UpgradeableERC20: burn amount exceeds minter total supply"
+            );
+            unchecked {
+                s.total -= amount;
+            }
         }
         _spendAllowance(account, _msgSender(), amount);
         _burn(account, amount);
