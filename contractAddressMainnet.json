@@ -1,7 +1,7 @@
 {
-	"UpgradeableCRC20Impl": "cfx:accjf2djy10zpjas5x4y746fb9hpnv8nbjvnsnw8xj",
+	"UpgradeableCRC20Impl": "cfx:acenzp2r43znxbna2deetjg43kbvczt7fpk96kdp2j",
 	"UpgradeableCRC20Beacon": "cfx:achj3ct33kb30sh36g5ct4d3h6cky52xjucz854twb",
-	"UpgradeableERC20Impl": "0xe7fdcb6628cf5bacb43b2c45d0fe9ea0233c9a61",
+	"UpgradeableERC20Impl": "0x0a90de1dcc7f715eccca88d0417138ce4c274813",
 	"UpgradeableERC20Beacon": "0x50bc460bfd2f13ff079298a094b00c457c33cef4",
 	"ConfluxSideImpl": "cfx:acg69m9cxw14rdfj6958p4ngrruz2swfdu8gcj9a26",
 	"ConfluxSideBeacon": "cfx:acfgr02jjn6dhn6g29ye4038vbmmj5fphem7z1zbsa",
@@ -9,5 +9,9 @@
 	"EvmSideImpl": "0xe254a9637a4cb07777fa07a6eb4892eb07e2db94",
 	"EvmSideBeacon": "0xbe445bb5e4b4f4cbf0479605c4ef2adb26972090",
 	"EvmSide": "0x4f9e3186513224cf152016ccd86019e7b9a3c809",
-	"KuCoin Token": "0xf01042c4a5e69bd1d8ed69c1a4765ffb0cf7acce"
+	"KuCoin Token": "0xf01042c4a5e69bd1d8ed69c1a4765ffb0cf7acce",
+	"Avalanche Token": "0xecb576867183d5c9ab95e78c6f19dfa9066fa83e",
+	"Fantom": "0xcf8cfb06a444df78063ce60792100c53167b9382",
+	"Matic Token": "0x762fb4c8f81e55bb9b90b3fbf4d79694ab09053e",
+	"ZBToken": "0x0ba96ecff327131b80aad2c0224d82ae1ea7a42f"
 }
