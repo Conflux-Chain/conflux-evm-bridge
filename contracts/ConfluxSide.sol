@@ -19,6 +19,17 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
 
     bool public initialized;
 
+    mapping(address => uint256) public crossTypes;
+    mapping(address => address) public peggedTokens;
+
+    /*=== cross types ===*/
+    uint256 public constant MINT_BURN = 0;
+    uint256 public constant LIQUIDITY_POOL = 1;
+
+    /*=== events ===*/
+    event LiquidityAdded(address token, uint256 amount, address account);
+    event LiquidityRemoved(address token, uint256 amount, address account);
+
     function initialize(address _evmSide, address _beacon) public {
         require(!initialized, "ConfluxSide: initialized");
         initialized = true;
@@ -173,7 +184,11 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
             )
         );
 
-        UpgradeableERC20(mappedTokens[_evmToken]).mint(msg.sender, _amount);
+        if (crossTypes[_evmToken] == MINT_BURN) {
+            UpgradeableERC20(mappedTokens[_evmToken]).mint(msg.sender, _amount);
+        } else {
+            IERC20(mappedTokens[_evmToken]).safeTransfer(msg.sender, _amount);
+        }
 
         emit CrossFromEvm(_evmToken, msg.sender, _evmAccount, _amount);
     }
@@ -195,7 +210,117 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
             address(this),
             _amount
         );
-        UpgradeableERC20(mappedTokens[_evmToken]).burn(_amount);
+        if (crossTypes[_evmToken] == MINT_BURN) {
+            UpgradeableERC20(mappedTokens[_evmToken]).burn(_amount);
+        }
+
+        crossSpaceCall.callEVM(
+            bytes20(evmSide),
+            abi.encodeWithSelector(
+                IEvmSide.withdrawFromCfx.selector,
+                _evmToken,
+                _evmAccount,
+                _amount
+            )
+        );
+
+        emit WithdrawToEvm(_evmToken, msg.sender, _evmAccount, _amount);
+    }
+
+    /*=== liquidity ===*/
+    /**
+     * @dev change the cross type of CRC20 _token to liquidity pool.
+     * @param _evmToken Token address in eSpace
+     * @param _mappedToken Token address in core space
+     * @param _peggedToken Pegged token address in core space
+     */
+    function createPool(
+        address _evmToken,
+        address _mappedToken,
+        address _peggedToken
+    ) external onlyOwner {
+        crossTypes[_evmToken] = LIQUIDITY_POOL;
+        if (mappedTokens[_evmToken] == address(0)) {
+            mappedTokenList.push(_evmToken);
+        }
+        mappedTokens[_evmToken] = _mappedToken;
+        sourceTokens[_mappedToken] = _evmToken;
+        peggedTokens[_mappedToken] = _peggedToken;
+    }
+
+    function _validateLiquidityToken(address _mappedToken) internal view {
+        require(
+            sourceTokens[_mappedToken] != address(0),
+            "CfxSide: not mapped token"
+        );
+        require(
+            crossTypes[sourceTokens[_mappedToken]] == LIQUIDITY_POOL,
+            "CfxSide: cross type not match"
+        );
+        require(
+            peggedTokens[_mappedToken] != address(0),
+            "CfxSide: invalid token"
+        );
+    }
+
+    /// @notice Add liquidity to bridge. The sender will receive the same amount of pegged token in exchange.
+    /// @param _mappedToken The token to add.
+    /// @param _amount Token amount.
+    function addLiquidity(address _mappedToken, uint256 _amount)
+        external
+        nonReentrant
+    {
+        require(_amount > 0, "CfxSide: zero amount");
+        _validateLiquidityToken(_mappedToken);
+        address peggedToken = peggedTokens[_mappedToken];
+        IERC20(_mappedToken).safeTransferFrom(
+            msg.sender,
+            address(this),
+            _amount
+        );
+        UpgradeableERC20(peggedToken).mint(msg.sender, _amount);
+        emit LiquidityAdded(_mappedToken, _amount, msg.sender);
+    }
+
+    /// @notice Remove liquidity from bridge. The sender will burn the pegged token and withdraw the original token.
+    /// @param _mappedToken The token to withdraw.
+    /// @param _amount Token amount.
+    function removeLiquidity(address _mappedToken, uint256 _amount)
+        external
+        nonReentrant
+    {
+        require(_amount > 0, "CfxSide: zero amount");
+        _validateLiquidityToken(_mappedToken);
+        address peggedToken = peggedTokens[_mappedToken];
+        UpgradeableERC20(peggedToken).burnFrom(msg.sender, _amount);
+        require(
+            IERC20(_mappedToken).balanceOf(address(this)) >= _amount,
+            "CfxSide: insufficient liquidity"
+        );
+        IERC20(_mappedToken).safeTransfer(msg.sender, _amount);
+        emit LiquidityRemoved(_mappedToken, _amount, msg.sender);
+    }
+
+    /**
+     * @dev Cross the liquidity to eSpace. This is useful when a token's cross type is switched from MINT_BURN to
+     *      LIQUIDITY_POOL.
+     * @param _evmToken eSpace token to cross
+     * @param _evmAccount Receive address in core space
+     * @param _amount Cross amount
+     */
+    function crossLiquidity(
+        address _evmToken,
+        address _evmAccount,
+        uint256 _amount
+    ) public nonReentrant {
+        require(
+            mappedTokens[_evmToken] != address(0),
+            "ConfluxSide: not mapped token"
+        );
+        _validateLiquidityToken(mappedTokens[_evmToken]);
+
+        address peggedToken = peggedTokens[mappedTokens[_evmToken]];
+        UpgradeableERC20(peggedToken).burnFrom(msg.sender, _amount);
 
         crossSpaceCall.callEVM(
             bytes20(evmSide),

@@ -25,6 +25,17 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
 
     bool public initialized;
 
+    mapping(address => uint256) public crossTypes;
+    mapping(address => address) public peggedTokens;
+
+    /*=== cross types ===*/
+    uint256 public constant MINT_BURN = 0;
+    uint256 public constant LIQUIDITY_POOL = 1;
+
+    /*=== events ===*/
+    event LiquidityAdded(address token, uint256 amount, address account);
+    event LiquidityRemoved(address token, uint256 amount, address account);
+
     function setCfxSide() public override {
         require(cfxSide == address(0), "EvmSide: cfx side set already");
         cfxSide = msg.sender;
@@ -79,7 +90,7 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
         _deploy(_crc20, d.name, d.symbol, d.decimals);
     }
 
-    // mint mapped CRC20
+    // mint mapped CRC20 or transfer mapped token to receiver, based on cross type
     function mint(
         address _token,
         address _to,
@@ -90,10 +101,14 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
             mappedTokens[_token] != address(0),
             "EvmSide: token is not mapped"
         );
-        UpgradeableERC20(mappedTokens[_token]).mint(_to, _amount);
+        if (crossTypes[_token] == MINT_BURN) {
+            UpgradeableERC20(mappedTokens[_token]).mint(_to, _amount);
+        } else if (crossTypes[_token] == LIQUIDITY_POOL) {
+            IERC20(mappedTokens[_token]).safeTransfer(_to, _amount);
+        }
     }
 
-    // burn locked mapped CRC20
+    // burn locked mapped CRC20 or just deduct locked balance based on cross type
     function burn(
         address _token,
         address _evmAccount,
@@ -109,7 +124,9 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
         uint256 lockedAmount =
             lockedMappedToken[mappedToken][_evmAccount][_cfxAccount];
         require(lockedAmount >= _amount, "EvmSide: insufficent lock");
-        UpgradeableERC20(mappedToken).burn(_amount);
+        if (crossTypes[_token] == MINT_BURN) {
+            UpgradeableERC20(mappedToken).burn(_amount);
+        }
         lockedAmount -= _amount;
         lockedMappedToken[mappedToken][_evmAccount][_cfxAccount] = lockedAmount;
 
@@ -199,5 +216,110 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
     ) public override nonReentrant {
         require(msg.sender == cfxSide, "EvmSide: sender is not cfx side");
         IERC20(_token).transfer(_evmAccount, _amount);
+    }
+
+    /*=== liquidity ===*/
+    /**
+     * @dev change the cross type of CRC20 _token to liquidity pool.
+     * @param _token Token address in core space
+     * @param _mappedToken Token address in eSpace
+     * @param _peggedToken Pegged token address in eSpace
+     */
+    function createPool(
+        address _token,
+        address _mappedToken,
+        address _peggedToken
+    ) external onlyOwner {
+        crossTypes[_token] = LIQUIDITY_POOL;
+        if (mappedTokens[_token] == address(0)) {
+            mappedTokenList.push(_token);
+        }
+        mappedTokens[_token] = _mappedToken;
+        sourceTokens[_mappedToken] = _token;
+        peggedTokens[_mappedToken] = _peggedToken;
+    }
+
+    function _validateLiquidityToken(address _mappedToken) internal view {
+        require(
+            sourceTokens[_mappedToken] != address(0),
+            "EvmSide: not mapped token"
+        );
+        require(
+            crossTypes[sourceTokens[_mappedToken]] == LIQUIDITY_POOL,
+            "EvmSide: cross type not match"
+        );
+        require(
+            peggedTokens[_mappedToken] != address(0),
+            "EvmSide: invalid token"
+        );
+    }
+
+    /// @notice Add liquidity to bridge. The sender will receive the same amount of pegged token in exchange.
+    /// @param _mappedToken The token to add.
+    /// @param _amount Token amount.
+    function addLiquidity(address _mappedToken, uint256 _amount)
+        external
+        nonReentrant
+    {
+        require(_amount > 0, "EvmSide: zero amount");
+        _validateLiquidityToken(_mappedToken);
+        address peggedToken = peggedTokens[_mappedToken];
+        IERC20(_mappedToken).safeTransferFrom(
+            msg.sender,
+            address(this),
+            _amount
+        );
+        UpgradeableERC20(peggedToken).mint(msg.sender, _amount);
+        emit LiquidityAdded(_mappedToken, _amount, msg.sender);
+    }
+
+    /// @notice Remove liquidity from bridge. The sender will burn the pegged token and withdraw the original token.
+    /// @param _mappedToken The token to withdraw.
+    /// @param _amount Token amount.
+    function removeLiquidity(address _mappedToken, uint256 _amount)
+        external
+        nonReentrant
+    {
+        require(_amount > 0, "EvmSide: zero amount");
+        _validateLiquidityToken(_mappedToken);
+        address peggedToken = peggedTokens[_mappedToken];
+        UpgradeableERC20(peggedToken).burnFrom(msg.sender, _amount);
+        require(
+            IERC20(_mappedToken).balanceOf(address(this)) >= _amount,
+            "EvmSide: insufficient liquidity"
+        );
+        IERC20(_mappedToken).safeTransfer(msg.sender, _amount);
+        emit LiquidityRemoved(_mappedToken, _amount, msg.sender);
+    }
+
+    /**
+     * @dev Cross the liquidity to core space. This is useful when a token's cross type is switched from MINT_BURN to
+     *      LIQUIDITY_POOL.
+     * @param _mappedToken Token to cross
+     * @param _cfxAccount Receive address in core space
+     * @param _amount Cross amount
+     */
+    function crossLiquidity(
+        address _mappedToken,
+        address _cfxAccount,
+        uint256 _amount
+    ) external nonReentrant {
+        _validateLiquidityToken(_mappedToken);
+
+        uint256 oldAmount =
+            lockedMappedToken[_mappedToken][msg.sender][_cfxAccount];
+        if (oldAmount > 0) {
+            UpgradeableERC20(_mappedToken).transfer(msg.sender, oldAmount);
+        }
+
+        if (_amount > 0) {
+            UpgradeableERC20(peggedTokens[_mappedToken]).burnFrom(
+                msg.sender,
+                _amount
+            );
+        }
+        lockedMappedToken[_mappedToken][msg.sender][_cfxAccount] = _amount;
+
+        emit LockedMappedToken(_mappedToken, msg.sender, _cfxAccount, _amount);
     }
 }

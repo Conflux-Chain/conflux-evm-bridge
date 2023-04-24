@@ -5,11 +5,7 @@ import "./erc20/ERC20.sol";
 import "./erc20/ERC20Pausable.sol";
 import "./access/AccessControlEnumerable.sol";
 
-contract UpgradeableERC20 is
-    ERC20,
-    ERC20Pausable,
-    AccessControlEnumerable
-{
+contract UpgradeableERC20 is ERC20, ERC20Pausable, AccessControlEnumerable {
     struct Supply {
         uint256 cap;
         uint256 total;
@@ -85,14 +81,14 @@ contract UpgradeableERC20 is
         setName(_name);
         setSymbol(_symbol);
     }
-    
+
     function burn(uint256 amount) public virtual {
         _burn(_msgSender(), amount);
     }
 
     function burnFrom(address account, uint256 amount) public virtual {
         Supply storage s = minterSupply[_msgSender()];
-        if(s.cap > 0 || s.total > 0){
+        if (s.cap > 0 || s.total > 0) {
             require(
                 s.total >= amount,
                 "UpgradeableERC20: burn amount exceeds minter total supply"
@@ -104,7 +100,7 @@ contract UpgradeableERC20 is
         _spendAllowance(account, _msgSender(), amount);
         _burn(account, amount);
     }
-    
+
     // alternative burn function, same as burnFrom
     function burn(address account, uint256 amount) public virtual {
         burnFrom(account, amount);
