@@ -229,7 +229,7 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
 
     /*=== liquidity ===*/
     /**
-     * @dev change the cross type of CRC20 _token to liquidity pool.
+     * @dev change the cross type of eSpace _evmToken to liquidity pool.
      * @param _evmToken Token address in eSpace
      * @param _mappedToken Token address in core space
      * @param _peggedToken Pegged token address in core space
@@ -243,62 +243,70 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         if (mappedTokens[_evmToken] == address(0)) {
             mappedTokenList.push(_evmToken);
         }
-        mappedTokens[_evmToken] = _mappedToken;
-        sourceTokens[_mappedToken] = _evmToken;
+        _setMappedToken(_evmToken, _mappedToken);
         peggedTokens[_mappedToken] = _peggedToken;
     }
 
-    function _validateLiquidityToken(address _mappedToken) internal view {
-        require(
-            sourceTokens[_mappedToken] != address(0),
-            "CfxSide: not mapped token"
-        );
-        require(
-            crossTypes[sourceTokens[_mappedToken]] == LIQUIDITY_POOL,
-            "CfxSide: cross type not match"
-        );
-        require(
-            peggedTokens[_mappedToken] != address(0),
-            "CfxSide: invalid token"
-        );
+    function _setMappedToken(address _token, address _mappedToken) internal {
+        if (mappedTokens[_token] != address(0)) {
+            sourceTokens[mappedTokens[_token]] = address(0);
+        }
+        mappedTokens[_token] = _mappedToken;
+        if (_mappedToken != address(0)) {
+            sourceTokens[_mappedToken] = _token;
+        }
+    }
+
+    function setMappedToken(address _token, address _mappedToken)
+        external
+        onlyOwner
+    {
+        _setMappedToken(_token, _mappedToken);
+    }
+
+    function setPeggedToken(address _token, address _peggedToken)
+        external
+        onlyOwner
+    {
+        peggedTokens[_token] = _peggedToken;
+    }
+
+    function _validateLiquidityToken(address _token) internal view {
+        require(peggedTokens[_token] != address(0), "CfxSide: invalid token");
     }
 
     /// @notice Add liquidity to bridge. The sender will receive the same amount of pegged token in exchange.
-    /// @param _mappedToken The token to add.
+    /// @param _token The token to add.
     /// @param _amount Token amount.
-    function addLiquidity(address _mappedToken, uint256 _amount)
+    function addLiquidity(address _token, uint256 _amount)
         external
         nonReentrant
     {
         require(_amount > 0, "CfxSide: zero amount");
-        _validateLiquidityToken(_mappedToken);
-        address peggedToken = peggedTokens[_mappedToken];
-        IERC20(_mappedToken).safeTransferFrom(
-            msg.sender,
-            address(this),
-            _amount
-        );
+        _validateLiquidityToken(_token);
+        address peggedToken = peggedTokens[_token];
+        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
         UpgradeableERC20(peggedToken).mint(msg.sender, _amount);
-        emit LiquidityAdded(_mappedToken, _amount, msg.sender);
+        emit LiquidityAdded(_token, _amount, msg.sender);
     }
 
     /// @notice Remove liquidity from bridge. The sender will burn the pegged token and withdraw the original token.
-    /// @param _mappedToken The token to withdraw.
+    /// @param _token The token to withdraw.
     /// @param _amount Token amount.
-    function removeLiquidity(address _mappedToken, uint256 _amount)
+    function removeLiquidity(address _token, uint256 _amount)
         external
         nonReentrant
     {
         require(_amount > 0, "CfxSide: zero amount");
-        _validateLiquidityToken(_mappedToken);
-        address peggedToken = peggedTokens[_mappedToken];
+        _validateLiquidityToken(_token);
+        address peggedToken = peggedTokens[_token];
         UpgradeableERC20(peggedToken).burnFrom(msg.sender, _amount);
         require(
-            IERC20(_mappedToken).balanceOf(address(this)) >= _amount,
+            IERC20(_token).balanceOf(address(this)) >= _amount,
             "CfxSide: insufficient liquidity"
         );
-        IERC20(_mappedToken).safeTransfer(msg.sender, _amount);
-        emit LiquidityRemoved(_mappedToken, _amount, msg.sender);
+        IERC20(_token).safeTransfer(msg.sender, _amount);
+        emit LiquidityRemoved(_token, _amount, msg.sender);
     }
 
     /**
@@ -316,6 +324,10 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         require(
             mappedTokens[_evmToken] != address(0),
             "ConfluxSide: not mapped token"
+        );
+        require(
+            crossTypes[_evmToken] == LIQUIDITY_POOL,
+            "ConfluxSide: cross type not match"
         );
         _validateLiquidityToken(mappedTokens[_evmToken]);
 
