@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "contract_prettier": "prettier --write contracts/**/*.sol contracts/**/**/*.sol",
+    "build": "hardhat compile",
+    "test": "hardhat test",
+    "fmt:sol": "prettier --write contracts/**/*.sol contracts/**/**/*.sol",
     "prettier": "prettier --single-quote --trailing-comma all --write \"src/**/*.js\" \"src/*.js\" \"test/*.js\"",
     "postinstall": "patch-package"
   },
