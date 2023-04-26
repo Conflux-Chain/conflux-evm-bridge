@@ -90,6 +90,17 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
         _deploy(_crc20, d.name, d.symbol, d.decimals);
     }
 
+    function _getAmountOut(
+        address _tokenIn,
+        address _tokenOut,
+        uint256 _amountIn
+    ) internal view returns (uint256) {
+        require(crc20Metadata[_tokenIn].registered, "EvmSide: not registered");
+        uint8 decimalsIn = crc20Metadata[_tokenIn].decimals;
+        uint8 decimalsOut = IERC20(_tokenOut).decimals();
+        return (_amountIn * (10**decimalsOut)) / (10**decimalsIn);
+    }
+
     // mint mapped CRC20 or transfer mapped token to receiver, based on cross type
     function mint(
         address _token,
@@ -101,10 +112,12 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
             mappedTokens[_token] != address(0),
             "EvmSide: token is not mapped"
         );
+        uint256 amountOut =
+            _getAmountOut(_token, mappedTokens[_token], _amount);
         if (crossTypes[_token] == MINT_BURN) {
-            UpgradeableERC20(mappedTokens[_token]).mint(_to, _amount);
+            UpgradeableERC20(mappedTokens[_token]).mint(_to, amountOut);
         } else if (crossTypes[_token] == LIQUIDITY_POOL) {
-            IERC20(mappedTokens[_token]).safeTransfer(_to, _amount);
+            IERC20(mappedTokens[_token]).safeTransfer(_to, amountOut);
         }
     }
 
@@ -120,14 +133,16 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
             mappedTokens[_token] != address(0),
             "EvmSide: token is not mapped"
         );
+        uint256 amountOut =
+            _getAmountOut(_token, mappedTokens[_token], _amount);
         address mappedToken = mappedTokens[_token];
         uint256 lockedAmount =
             lockedMappedToken[mappedToken][_evmAccount][_cfxAccount];
-        require(lockedAmount >= _amount, "EvmSide: insufficent lock");
+        require(lockedAmount >= amountOut, "EvmSide: insufficent lock");
         if (crossTypes[_token] == MINT_BURN) {
-            UpgradeableERC20(mappedToken).burn(_amount);
+            UpgradeableERC20(mappedToken).burn(amountOut);
         }
-        lockedAmount -= _amount;
+        lockedAmount -= amountOut;
         lockedMappedToken[mappedToken][_evmAccount][_cfxAccount] = lockedAmount;
 
         emit LockedMappedToken(
