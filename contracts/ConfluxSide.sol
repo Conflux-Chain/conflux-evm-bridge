@@ -161,6 +161,23 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         _deploy(_evmToken, name, symbol, decimals);
     }
 
+    function _getAmountOut(
+        address _tokenIn,
+        address _tokenOut,
+        uint256 _amountIn
+    ) internal returns (uint256) {
+        uint8 decimalsIn = IERC20(_tokenIn).decimals();
+        uint8 decimalsOut =
+            abi.decode(
+                crossSpaceCall.callEVM(
+                    bytes20(_tokenOut),
+                    abi.encodeWithSelector(IERC20.decimals.selector)
+                ),
+                (uint8)
+            );
+        return (_amountIn * (10**decimalsOut)) / (10**decimalsIn);
+    }
+
     // cross ERC20 from EVM space
     function crossFromEvm(
         address _evmToken,
@@ -180,7 +197,7 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
                 _evmToken,
                 _evmAccount,
                 msg.sender,
-                _amount
+                _getAmountOut(mappedTokens[_evmToken], _evmToken, _amount)
             )
         );
 
@@ -220,7 +237,7 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
                 IEvmSide.withdrawFromCfx.selector,
                 _evmToken,
                 _evmAccount,
-                _amount
+                _getAmountOut(mappedTokens[_evmToken], _evmToken, _amount)
             )
         );
 
@@ -340,7 +357,7 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
                 IEvmSide.withdrawFromCfx.selector,
                 _evmToken,
                 _evmAccount,
-                _amount
+                _getAmountOut(mappedTokens[_evmToken], _evmToken, _amount)
             )
         );
 
