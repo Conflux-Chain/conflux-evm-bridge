@@ -236,3 +236,14 @@ Steps of withdraw from core space:
 
 (2) call *withdrawToEvm(_token, _evmAccount, 10)*.
 
+## Liquidity Provider
+
+Liquidity providers can provide liquidity for tokens whose cross chain type is LIQUIDITY_POOL in two steps.
+
+(1) call ```approve``` of the token, set the spender to the bridge contract, i.e. ```EvmSide``` on eSpace or ```ConfluxSide``` on core space. 
+
+(2) call ```addLiquidity``` of the bridge contract: 
+```
+addLiquidity(address _token, uint256 _amount)
+```
+The contract address for [testnet](contractAddressTestnet.json) and [mainnet](contractAddressMainnet.json) can be found at root folder.
