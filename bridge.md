@@ -246,4 +246,13 @@ Liquidity providers can provide liquidity for tokens whose cross chain type is L
 ```
 addLiquidity(address _token, uint256 _amount)
 ```
+
+This function will transfer ```_amount``` token from sender address and mint ```_amount``` pegged token to sender as LP token.
+
+Further, liquidity providers can call ```removeLiquidity``` of the bridge contract to redeem their token:
+```
+removeLiquidity(address _token, uint256 _amount)
+```
+This function will burn ```_amount``` pegged token from the sender's address and transfer ```_amount``` token to sender.
+
 The contract address for [testnet](contractAddressTestnet.json) and [mainnet](contractAddressMainnet.json) can be found at root folder.
