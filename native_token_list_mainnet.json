@@ -72,7 +72,7 @@
 			"evm_space_name": "dForce",
 			"evm_space_symbol": "DF",
 			"decimals": "18",
-			"icon": "https://scan-icons.oss-cn-hongkong.aliyuncs.com/mainnet/cfx%3Aacc3hzr7e570ccnrb91wgufwcs6a171jvuax68krfm.png"
+      "icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/0x431ad2ff6a9c365805ebad47ee021148d6f7dbe0.png"
 		}
 	],
 	"evm_native_tokens": []
