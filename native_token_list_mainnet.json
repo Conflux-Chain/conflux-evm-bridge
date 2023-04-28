@@ -63,6 +63,16 @@
 			"evm_space_symbol": "cTAD",
 			"decimals": "18",
 			"icon": "https://scan-icons.oss-cn-hongkong.aliyuncs.com/mainnet/cfx%3Aacg8dy0xvpyzh1f8n9e9gcf3mm7se1ts5y979mawtf.png"
+		},
+		{
+			"native_address": "cfx:acc3hzr7e570ccnrb91wgufwcs6a171jvuax68krfm",
+			"mapped_address": "0x53aa2b7bead41614577ba5b636c482790c5f54c5",
+			"core_space_name": "conflux DF",
+			"core_space_symbol": "cDF",
+			"evm_space_name": "dForce",
+			"evm_space_symbol": "DF",
+			"decimals": "18",
+			"icon": "https://scan-icons.oss-cn-hongkong.aliyuncs.com/mainnet/cfx%3Aacc3hzr7e570ccnrb91wgufwcs6a171jvuax68krfm.png"
 		}
 	],
 	"evm_native_tokens": []
