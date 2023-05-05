@@ -73,6 +73,16 @@
 			"evm_space_symbol": "DF",
 			"decimals": "18",
       "icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/0x431ad2ff6a9c365805ebad47ee021148d6f7dbe0.png"
+		},
+		{
+			"native_address": "cfx:accbh92gw9wzvdxacn7tc3rb7g7tk2uv363s37tr30",
+			"mapped_address": "0x9293c7b4b4fb90fb3ee76f7c6189aa841e57e5c0",
+			"core_space_name": "CNHC Token",
+			"core_space_symbol": "CNHC",
+			"evm_space_name": "CNHC Token",
+			"evm_space_symbol": "CNHC",
+			"decimals": "6",
+      "icon": "https://s3.ap-northeast-1.amazonaws.com/static.cnhc.to/lQLPJw3ehA6Vv-LMlsyWsCcm77NPdnpTBExSvH4AzQA_150_150.png"
 		}
 	],
 	"evm_native_tokens": []
