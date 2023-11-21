@@ -18,7 +18,7 @@
 			"evm_space_name": "Tether USD",
 			"evm_space_symbol": "USDT",
 			"decimals": "18",
-			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/0xdac17f958d2ee523a2206206994597c13d831ec7.png"
+			"icon": "https://scan-icons.oss-cn-hongkong.aliyuncs.com/mainnet/0xfe97e85d13abd9c1c33384e796f10b73905637ce.png"
 		},
 		{
 			"native_address": "cfx:acdrf821t59y12b4guyzckyuw2xf1gfpj2ba0x4sj6",
@@ -28,7 +28,7 @@
 			"evm_space_name": "Ethereum Token",
 			"evm_space_symbol": "ETH",
 			"decimals": "18",
-			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/eth.png"
+			"icon": "https://scan-icons.oss-cn-hongkong.aliyuncs.com/mainnet/0xa47f43de2f9623acb395ca4905746496d2014d57.png"
 		},
 		{
 			"native_address": "cfx:acg7z3y6x8pzem2v6pnyxuysn78pvgu3jjhzaatpy5",
@@ -38,7 +38,7 @@
 			"evm_space_name": "Wrapped BTC",
 			"evm_space_symbol": "WBTC",
 			"decimals": "18",
-			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/btc.png"
+			"icon": "https://scan-icons.oss-cn-hongkong.aliyuncs.com/mainnet/0xbe01651b0b556b79ed5d0f9f0cf46a097fddb470.png"
 		},
 		{
 			"native_address": "cfx:aca13suyk7mbgxw9y3wbjn9vd136swu6s21tg67xmb",
@@ -48,7 +48,7 @@
 			"evm_space_name": "USD Coin",
 			"evm_space_symbol": "USDC",
 			"decimals": "18",
-			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png"
+			"icon": "https://scan-icons.oss-cn-hongkong.aliyuncs.com/mainnet/0x6963efed0ab40f6c3d7bda44a05dcf1437c44372.png"
 		},
 		{
 			"native_address": "cfx:acd3fhs4u0yzx7kpzrujhj15yg63st2z6athmtka95",
@@ -58,7 +58,7 @@
 			"evm_space_name": "Dai Stablecoin",
 			"evm_space_symbol": "DAI",
 			"decimals": "18",
-			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/0x6b175474e89094c44da98b954eedeac495271d0f.png"
+			"icon": "https://scan-icons.oss-cn-hongkong.aliyuncs.com/mainnet/cfx%3Aacd3fhs4u0yzx7kpzrujhj15yg63st2z6athmtka95.png"
 		},
 		{
 			"native_address": "cfx:acczy0zs2fu03pnx0w1u19pkprsm6r50spkz7eg4c3",
@@ -68,7 +68,7 @@
 			"evm_space_name": "BNB",
 			"evm_space_symbol": "BNB",
 			"decimals": "18",
-			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/bsc_bnb.png"
+			"icon": "https://scan-icons.oss-cn-hongkong.aliyuncs.com/mainnet/cfx%3Aacczy0zs2fu03pnx0w1u19pkprsm6r50spkz7eg4c3.png"
 		},
 		{
 			"native_address": "cfx:acg8dy0xvpyzh1f8n9e9gcf3mm7se1ts5y979mawtf",
