@@ -1,6 +1,16 @@
 {
 	"core_native_tokens": [
 		{
+			"native_address": "cfx:achc8nxj7r451c223m18w2dwjnmhkd6rxawrvkvsy2",
+			"mapped_address": "0xba2289fee4673ef00ee8d8dae260965ab543b68f",
+			"core_space_name": "FansCoin",
+			"core_space_symbol": "FC",
+			"evm_space_name": "FansCoin",
+			"evm_space_symbol": "FC",
+			"decimals": "18",
+			"icon": "https://scan-icons.oss-cn-hongkong.aliyuncs.com/mainnet/cfx%3Aachc8nxj7r451c223m18w2dwjnmhkd6rxawrvkvsy2.svg"
+		},
+		{
 			"native_address": "cfxtest:acgcj0h8xp3ydgtmf39e5kh8ab6f3ynnajafp2y04f",
 			"mapped_address": "0xc229b45761C0F960A8d6cD4f770E7065528d150A",
 			"core_space_name": "Conflux Faucet Token",
