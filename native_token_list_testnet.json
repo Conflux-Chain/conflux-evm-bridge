@@ -18,7 +18,7 @@
 			"evm_space_name": "Conflux Faucet Token",
 			"evm_space_symbol": "CFT",
 			"decimals": "18",
-			"icon": "https://scan-icons.oss-cn-hongkong.aliyuncs.com/mainnet/cfx%3Aacf2rcsh8payyxpg6xj7b0ztswwh81ute60tsw35j7.png"
+			"icon": "https://conflux-static.oss-cn-beijing.aliyuncs.com/icons/default.png"
 		},
 		{
 			"native_address": "cfxtest:acepe88unk7fvs18436178up33hb4zkuf62a9dk1gv",
