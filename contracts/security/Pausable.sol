@@ -30,9 +30,9 @@ abstract contract Pausable is Context {
     /**
      * @dev Initializes the contract in unpaused state.
      */
-    constructor() {
-        _paused = false;
-    }
+    // constructor() {
+    //     _paused = false;
+    // }
 
     /**
      * @dev Returns true if the contract is paused, and false otherwise.

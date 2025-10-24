@@ -660,6 +660,56 @@ async function grantMinterRole() {
   console.log(`done`);
 }
 
+async function setTransferBanEvm(tokenAddress, account, banned) {
+  if (!tokenAddress || !account) {
+    throw new Error('token address and account are required');
+  }
+  await load();
+  let evmNonce = await w3.eth.getTransactionCount(admin);
+  let normalizedToken = w3.utils.toChecksumAddress(tokenAddress);
+  let normalizedAccount = w3.utils.toChecksumAddress(account);
+  UpgradeableERC20.instance.options.address = normalizedToken;
+  let data = UpgradeableERC20.instance.methods
+    .setTransferBan(normalizedAccount, banned)
+    .encodeABI();
+  await ethTransact(data, normalizedToken, evmNonce);
+  console.log(
+    `${banned ? 'banned' : 'unbanned'} ${normalizedAccount} on ${normalizedToken}`,
+  );
+}
+
+async function getTransferBanEvm(tokenAddress, account) {
+  if (!tokenAddress || !account) {
+    throw new Error('token address and account are required');
+  }
+  await load();
+  let normalizedToken = w3.utils.toChecksumAddress(tokenAddress);
+  let normalizedAccount = w3.utils.toChecksumAddress(account);
+  UpgradeableERC20.instance.options.address = normalizedToken;
+  let res = await UpgradeableERC20.instance.methods
+    .isTransferBanned(normalizedAccount)
+    .call();
+  console.log(
+    `${normalizedAccount} on ${normalizedToken} is ${res ? '' : 'not '}banned`,
+  );
+}
+
+function parseTokenAccount(input) {
+  if (typeof input !== 'string' || input.length === 0) {
+    throw new Error('expected token:account parameter');
+  }
+  let parts = input.split(':');
+  if (parts.length !== 2) {
+    throw new Error('expected token:account parameter');
+  }
+  let token = parts[0].trim();
+  let account = parts[1].trim();
+  if (!token || !account) {
+    throw new Error('token and account are required');
+  }
+  return { token, account };
+}
+
 async function add() {
   await load();
 
@@ -1034,7 +1084,7 @@ async function ownership() {
   let evmNonce = await w3.eth.getTransactionCount(admin);
 
   let data, receipt, res;
-  let DEFAULT_ADMIN_ROLE =
+  const DEFAULT_ADMIN_ROLE =
     '0x0000000000000000000000000000000000000000000000000000000000000000';
 
   await transferOwnershipCfx(
@@ -1072,8 +1122,6 @@ async function ownership() {
   ++evmNonce;
 
   res = (await EvmSide.instance.methods.getTokens(0).call()).result;
-  let DEFAULT_ADMIN_ROLE =
-    '0x0000000000000000000000000000000000000000000000000000000000000000';
   for (let i = 0; i < res.length; ++i) {
     let mapped_address = await EvmSide.instance.methods
       .mappedTokens(res[i])
@@ -1142,6 +1190,12 @@ async function run() {
     .option('--upgrade', 'upgrade')
     .option('--token', 'deploy token')
     .option('--ownership', 'change ownership')
+    .option('--ban <tokenAccount>', 'ban transfers for account on token')
+    .option('--unban <tokenAccount>', 'unban transfers for account on token')
+    .option(
+      '--checkBan <tokenAccount>',
+      'check transfer ban status for account on token',
+    )
     .parse(process.argv);
 
   if (program.crosscfx) {
@@ -1177,6 +1231,15 @@ async function run() {
     token();
   } else if (program.ownership) {
     ownership();
+  } else if (program.ban) {
+    let { token, account } = parseTokenAccount(program.ban);
+    setTransferBanEvm(token, account, true);
+  } else if (program.unban) {
+    let { token, account } = parseTokenAccount(program.unban);
+    setTransferBanEvm(token, account, false);
+  } else if (program.checkBan) {
+    let { token, account } = parseTokenAccount(program.checkBan);
+    getTransferBanEvm(token, account);
   }
   /*await crossCfx('0xF8298fCFA36981DD5aE401fD1d880B16464C5860');
   await crossCfx('0x34e676cC66DB8Ea20C2a42a1939b5bcf303CED72');

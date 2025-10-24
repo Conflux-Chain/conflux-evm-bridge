@@ -12,6 +12,7 @@ contract UpgradeableERC20 is ERC20, ERC20Pausable, AccessControlEnumerable {
     }
 
     event MinterCapUpdated(address indexed minter, uint256 cap);
+    event TransferBanUpdated(address indexed account, bool isBanned);
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
@@ -19,6 +20,7 @@ contract UpgradeableERC20 is ERC20, ERC20Pausable, AccessControlEnumerable {
     bool public initialized;
 
     mapping(address => Supply) public minterSupply;
+    mapping(address => bool) private _transferBans;
 
     function initialize(
         string memory _name,
@@ -72,6 +74,40 @@ contract UpgradeableERC20 is ERC20, ERC20Pausable, AccessControlEnumerable {
     {
         minterSupply[minter].cap = cap;
         emit MinterCapUpdated(minter, cap);
+    }
+
+    function isTransferBanned(address account) public view returns (bool) {
+        return _transferBans[account];
+    }
+
+    function setTransferBan(address account, bool banned)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        _setTransferBan(account, banned);
+    }
+
+    function banAddress(address account)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        _setTransferBan(account, true);
+    }
+
+    function unbanAddress(address account)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        _setTransferBan(account, false);
+    }
+
+    function _setTransferBan(address account, bool banned) internal {
+        require(account != address(0), "UpgradeableERC20: zero address");
+        if (_transferBans[account] == banned) {
+            return;
+        }
+        _transferBans[account] = banned;
+        emit TransferBanUpdated(account, banned);
     }
 
     function setMetadata(string memory _name, string memory _symbol)
@@ -145,6 +181,18 @@ contract UpgradeableERC20 is ERC20, ERC20Pausable, AccessControlEnumerable {
         address to,
         uint256 amount
     ) internal virtual override(ERC20, ERC20Pausable) {
+        if (from != address(0)) {
+            require(
+                !_transferBans[from],
+                "UpgradeableERC20: sender banned"
+            );
+        }
+        if (to != address(0)) {
+            require(
+                !_transferBans[to],
+                "UpgradeableERC20: recipient banned"
+            );
+        }
         super._beforeTokenTransfer(from, to, amount);
     }
 }
